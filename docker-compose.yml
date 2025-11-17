@@ -38,8 +38,6 @@ services:
       - backend
     networks:
       - wedding-gallery-network
-    stdin_open: true
-    tty: true
 
 volumes:
   backend_volumes:
