@@ -11,7 +11,8 @@ A single reference file describing the repository structure, the tools and servi
 ├─ README.md
 ├─ .gitignore
 ├─ .env.example
-├─ docker-compose.local.yml          # local development (run yourself)
+<<<<<<< HEAD
+├─ docker-compose.yml          # local development (run yourself)
 ├─ docker-compose.production.yml     # production deployment (real domain later)
 ├─ apps/
 │  ├─ backend/
@@ -69,7 +70,8 @@ A single reference file describing the repository structure, the tools and servi
 
 1. Create repository skeleton as shown above.
 2. Add `requirements.txt` (backend) and `package.json` (frontend) placeholders.
-3. Add `docker-compose.local.yml` and `docker-compose.production.yml` with service stubs.
+<<<<<<< HEAD
+3. Add `docker-compose.yml` and `docker-compose.production.yml` with service stubs.
 4. Add `deploy/nginx.conf` placeholder.
 5. Commit an initial `README.md` and this `PROJECT_OVERVIEW.md`.
 
@@ -77,7 +79,8 @@ A single reference file describing the repository structure, the tools and servi
 
 1. Initialize Django project (inside `apps/backend/src/`) and keep `manage.py` at `apps/backend/`.
 2. Add a healthcheck endpoint on the backend and a simple homepage on the frontend.
-3. Wire local compose to run both services (`docker compose -f docker-compose.local.yml up`).
+<<<<<<< HEAD
+3. Wire local compose to run both services (`docker compose -f docker-compose.yml up`).
 
 ### Phase C — Core Features (MVP)
 
