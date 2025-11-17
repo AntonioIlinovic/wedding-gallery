@@ -77,7 +77,7 @@ A single reference file describing the repository structure, the tools and servi
 
 1. Initialize Django project (inside `apps/backend/src/`) and keep `manage.py` at `apps/backend/`.
 2. Add a healthcheck endpoint on the backend and a simple homepage on the frontend.
-3. Wire local compose to run both services (`docker compose -f docker-compose.yml up`).
+3. Wire local compose to run both services (`docker compose up`).
 
 ### Phase C — Core Features (MVP)
 
