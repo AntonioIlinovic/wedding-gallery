@@ -55,11 +55,13 @@ resource "aws_security_group" "rds" {
 resource "random_password" "db_password" {
   length  = 16
   special = true
+  override_special = "!#$&*()-=+[]{}<>:?"  # all tf special characters without '/', '@', '"', ' ' (rds requirement)
 }
 
 # Store password in AWS Secrets Manager
 resource "aws_secretsmanager_secret" "db_password" {
   name = "${var.project_name}-${var.environment}-db-password"
+  recovery_window_in_days=0
 
   tags = merge(
     var.tags,
