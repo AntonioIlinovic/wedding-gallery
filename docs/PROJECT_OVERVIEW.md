@@ -29,8 +29,7 @@ A single reference file describing the repository structure, the tools and servi
    └─ terraform/
       ├─ modules/                    # reusable building blocks
       └─ envs/
-         ├─ dev/
-         └─ prod/
+         └─ prod/                    # production environment (dev done locally)
 ```
 
 **Notes**
@@ -56,6 +55,7 @@ A single reference file describing the repository structure, the tools and servi
 ## 3) Cloud & Services (high‑level)
 
 * **Domain, DNS, Security:** Cloudflare (DNS, HTTPS termination/proxy, basic WAF)
+* **Production Domain:** [weddinggallery.site](http://weddinggallery.site/)
 * **Compute (initial):** Single VM/instance running `docker-compose`
 * **Object Storage:** S3‑compatible storage for photos
 * **Container Registry:** AWS ECR (for built images)
@@ -89,8 +89,10 @@ A single reference file describing the repository structure, the tools and servi
 ### Phase D — Infrastructure Provisioning (Terraform)
 
 1. Define Terraform modules for object storage, container registry, database, IAM/auth.
-2. Apply **dev** environment first; store state securely.
+2. Apply production environment; store state securely.
 3. Configure CORS for uploads and minimal lifecycle rules for storage.
+
+**Note:** Development is done locally using `docker-compose.yml`. Only production infrastructure is managed via Terraform.
 
 ### Phase E — CI/CD & Production
 
@@ -98,3 +100,4 @@ A single reference file describing the repository structure, the tools and servi
 2. Provision a small VM and point domain via Cloudflare.
 3. Use `docker-compose.production.yml` to run the app behind Nginx.
 4. Run backend migrations as part of the first deploy; verify health.
+5. Configure DNS: Point [weddinggallery.site](http://weddinggallery.site/) to the EC2 instance via Cloudflare.

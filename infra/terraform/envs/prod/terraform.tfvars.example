@@ -1,0 +1,26 @@
+# Copy this file to terraform.tfvars and fill in your values
+# IMPORTANT: Review all values carefully for production use
+
+aws_region = "eu-central-1"
+
+# VPC Configuration
+vpc_cidr             = "10.1.0.0/24"
+public_subnet_cidrs  = ["10.1.0.0/26", "10.1.0.64/26"]
+private_subnet_cidrs = ["10.1.0.128/26", "10.1.0.192/26"]
+
+# S3 Configuration - Production domain: weddinggallery.site
+s3_allowed_origins = [
+  "https://weddinggallery.site",
+  "https://www.weddinggallery.site"
+]
+
+# EC2 Configuration
+ec2_instance_type = "t3.micro"
+key_pair_name     = "aws-wedding-gallery-prod"
+ssh_allowed_cidrs = ["YOUR.IP.ADDRESS/32"]
+
+# RDS Configuration
+rds_instance_class        = "db.t3.micro"
+rds_allocated_storage     = 20
+rds_max_allocated_storage = 100
+

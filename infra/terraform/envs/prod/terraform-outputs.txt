@@ -1,0 +1,11 @@
+db_password_secret_arn = <sensitive>
+ec2_instance_id = "i-049c07f52ec9ae811"
+ec2_public_dns = "ec2-18-158-99-24.eu-central-1.compute.amazonaws.com"
+ec2_public_ip = "18.158.99.24"
+ecr_backend_repository_url = "528160042133.dkr.ecr.eu-central-1.amazonaws.com/wedding-gallery-prod-backend"
+ecr_frontend_repository_url = "528160042133.dkr.ecr.eu-central-1.amazonaws.com/wedding-gallery-prod-frontend"
+rds_address = "wedding-gallery-prod-db.cxsaem42en21.eu-central-1.rds.amazonaws.com"
+rds_endpoint = "wedding-gallery-prod-db.cxsaem42en21.eu-central-1.rds.amazonaws.com:5432"
+s3_bucket_arn = "arn:aws:s3:::wedding-gallery-prod-photos-528160042133"
+s3_bucket_id = "wedding-gallery-prod-photos-528160042133"
+vpc_id = "vpc-0c436ead81b73a441"
