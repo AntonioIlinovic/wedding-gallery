@@ -278,6 +278,15 @@ terraform destroy
 
 This command will prompt you for confirmation before deleting all infrastructure resources defined in your Terraform configuration. **Only run this if you are sure you want to remove everything!**
 
+**Note on Secrets Manager:**
+`terraform destroy` will schedule the database secret for deletion but won't delete it immediately (default recovery window is 30 days). If you try to re-apply the same Terraform configuration, it will fail because the secret name is still in use.
+ 
+To force-delete the secret immediately, run this command:
+```bash
+
+aws secretsmanager delete-secret --secret-id wedding-gallery-prod-db-password --force-delete-without-recovery
+```
+
 
 ## Next Steps
 
