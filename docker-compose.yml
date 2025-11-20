@@ -14,7 +14,9 @@ services:
       - postgres
       - minio
     command: >
-      sh -c "python manage.py migrate --noinput
+      sh -c "python manage.py migrate --noinput &&
+             python manage.py create_superuser &&
+             python manage.py runserver 0.0.0.0:8000"
     networks:
       - wedding-gallery-network
 
