@@ -75,11 +75,20 @@ services:
       - .env
     entrypoint: >
       /bin/sh -c "
-      until (/usr/bin/mc config host add minio http://minio:9000 ${MINIO_ROOT_USER} ${MINIO_ROOT_PASSWORD}) do echo '...waiting...' && sleep 1; done;
-      /usr/bin/mc rm -r --force minio/media;
-      /usr/bin/mc mb minio/media;
-      /usr/bin/mc policy set public minio/media;
-      exit 0;
+        echo 'Waiting for MinIO...';
+        until mc alias set minio http://minio:9000 ${MINIO_ROOT_USER} ${MINIO_ROOT_PASSWORD};
+        do
+          sleep 1;
+        done
+
+        echo 'Creating bucket (if not exists)...';
+        mc mb --ignore-existing minio/${MINIO_BUCKET_NAME}
+
+        echo 'Setting bucket public...';
+        mc anonymous set public minio/${MINIO_BUCKET_NAME}
+
+        echo 'Done.';
+        exit 0
       "
     networks:
       - wedding-gallery-network
