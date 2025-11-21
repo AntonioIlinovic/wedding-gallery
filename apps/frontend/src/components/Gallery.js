@@ -10,12 +10,31 @@ function Gallery({ accessToken, onBack }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedPhoto, setSelectedPhoto] = useState(null);
+  const [selectedPhotoIndex, setSelectedPhotoIndex] = useState(null);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(false);
 
   useEffect(() => {
     loadPhotos();
   }, [accessToken, page]);
+
+  // Keyboard navigation for lightbox
+  useEffect(() => {
+    const handleKeyPress = (e) => {
+      if (selectedPhoto === null) return;
+
+      if (e.key === 'ArrowLeft') {
+        navigatePrevious();
+      } else if (e.key === 'ArrowRight') {
+        navigateNext();
+      } else if (e.key === 'Escape') {
+        closeLightbox();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyPress);
+    return () => window.removeEventListener('keydown', handleKeyPress);
+  }, [selectedPhoto, selectedPhotoIndex, photos]);
 
   const loadPhotos = async () => {
     try {
@@ -47,12 +66,30 @@ function Gallery({ accessToken, onBack }) {
     setPage((prev) => prev + 1);
   };
 
-  const openLightbox = (photo) => {
+  const openLightbox = (photo, index) => {
     setSelectedPhoto(photo);
+    setSelectedPhotoIndex(index);
   };
 
   const closeLightbox = () => {
     setSelectedPhoto(null);
+    setSelectedPhotoIndex(null);
+  };
+
+  const navigateNext = () => {
+    if (selectedPhotoIndex < photos.length - 1) {
+      const nextIndex = selectedPhotoIndex + 1;
+      setSelectedPhotoIndex(nextIndex);
+      setSelectedPhoto(photos[nextIndex]);
+    }
+  };
+
+  const navigatePrevious = () => {
+    if (selectedPhotoIndex > 0) {
+      const prevIndex = selectedPhotoIndex - 1;
+      setSelectedPhotoIndex(prevIndex);
+      setSelectedPhoto(photos[prevIndex]);
+    }
   };
 
   return (
@@ -86,11 +123,11 @@ function Gallery({ accessToken, onBack }) {
       ) : (
         <>
           <div className="photo-grid">
-            {photos.map((photo) => (
+            {photos.map((photo, index) => (
               <div
                 key={photo.id}
                 className="photo-item"
-                onClick={() => openLightbox(photo)}
+                onClick={() => openLightbox(photo, index)}
               >
                 <img src={photo.url} alt={photo.original_filename} />
                 <div className="photo-overlay">
@@ -114,15 +151,44 @@ function Gallery({ accessToken, onBack }) {
 
       {selectedPhoto && (
         <div className="lightbox" onClick={closeLightbox}>
-          <div className="lightbox-content" onClick={(e) => e.stopPropagation()}>
-            <button className="lightbox-close" onClick={closeLightbox}>
-              ✕
+          <button className="lightbox-close" onClick={closeLightbox}>
+            ✕
+          </button>
+          
+          {/* Previous button - fixed position on left */}
+          {selectedPhotoIndex > 0 && (
+            <button 
+              className="lightbox-nav lightbox-nav-prev" 
+              onClick={(e) => { e.stopPropagation(); navigatePrevious(); }}
+            >
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="15 18 9 12 15 6"></polyline>
+              </svg>
             </button>
+          )}
+          
+          {/* Next button - fixed position on right */}
+          {selectedPhotoIndex < photos.length - 1 && (
+            <button 
+              className="lightbox-nav lightbox-nav-next" 
+              onClick={(e) => { e.stopPropagation(); navigateNext(); }}
+            >
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="9 18 15 12 9 6"></polyline>
+              </svg>
+            </button>
+          )}
+          
+          <div className="lightbox-content" onClick={(e) => e.stopPropagation()}>
             <img src={selectedPhoto.url} alt={selectedPhoto.original_filename} />
+            
             <div className="lightbox-info">
               <p className="lightbox-filename">{selectedPhoto.original_filename}</p>
               <p className="lightbox-date">
                 {new Date(selectedPhoto.uploaded_at).toLocaleString()}
+              </p>
+              <p className="lightbox-counter">
+                {selectedPhotoIndex + 1} / {photos.length}
               </p>
             </div>
           </div>
