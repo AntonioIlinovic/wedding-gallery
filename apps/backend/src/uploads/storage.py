@@ -85,12 +85,22 @@ class StorageClient:
     def generate_presigned_url(self, key: str, expires_in: int = 3600) -> str:
         """
         Generate a time-limited URL for reading an object.
+        For Minio in local dev, we replace the internal Docker hostname with localhost.
         """
-        return self.client.generate_presigned_url(
+        url = self.client.generate_presigned_url(
             "get_object",
             Params={"Bucket": self.bucket_name, "Key": key},
             ExpiresIn=expires_in,
         )
+        
+        # For local development with Minio, replace internal hostname with localhost
+        # This allows the browser to access the presigned URLs
+        from django.conf import settings
+        if getattr(settings, "USE_MINIO", False):
+            # Replace minio:9000 with localhost:9000 for browser access
+            url = url.replace("minio:9000", "localhost:9000")
+        
+        return url
 
 
 _storage_client: StorageClient | None = None
