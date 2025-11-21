@@ -15,6 +15,7 @@ services:
       - minio
     command: >
       sh -c "python manage.py migrate &&
+             export DJANGO_SETTINGS_MODULE=src.config.settings &&
              pytest &&
              python manage.py create_superuser &&
              python manage.py runserver 0.0.0.0:8000"
