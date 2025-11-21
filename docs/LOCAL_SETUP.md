@@ -89,6 +89,20 @@ To run tests manually for the backend service:
 docker compose exec backend pytest
 ```
 
+## Running with a Reverse Proxy (Caddy)
+
+For a setup that more closely mirrors a production environment, you can run the application with the Caddy reverse proxy. Caddy sits in front of your services and routes traffic to the correct application, allowing you to access the entire application through a single port (80).
+
+To run the application with Caddy, use the following command:
+```bash
+docker compose -f docker-compose.yml -f docker-compose.caddy.yml up --build
+```
+
+When using this setup:
+- Access the application at [http://localhost](http://localhost).
+- Caddy automatically routes API requests (e.g., `/api/health/`) to the backend service and all other requests to the frontend service.
+- The individual ports for the `frontend` (3000) and `backend` (8000) are not exposed to your host machine.
+
 ## Project Services
 
 -   `frontend`: The React frontend application.

@@ -1,0 +1,18 @@
+services:
+  caddy:
+    image: caddy:2
+    container_name: wedding-gallery-caddy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./deploy/caddy/Caddyfile:/etc/caddy/Caddyfile
+      - caddy_data:/data
+      - caddy_config:/config
+    networks:
+      - wedding-gallery-network
+
+volumes:
+  caddy_data:
+  caddy_config:

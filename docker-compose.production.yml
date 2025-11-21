@@ -1,6 +1,5 @@
 # Production docker-compose configuration
 # This will be configured in Phase E
-version: '3.8'
 
 # Placeholder for production deployment
 # Will include nginx, production settings, and proper networking
