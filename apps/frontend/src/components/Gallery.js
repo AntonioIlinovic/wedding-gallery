@@ -99,9 +99,6 @@ function Gallery({ accessToken, onBack }) {
           ← Back
         </button>
         <h2>Photo Gallery</h2>
-        <button className="refresh-button" onClick={handleRefresh}>
-          🔄 Refresh
-        </button>
       </div>
 
       {loading && page === 1 ? (
