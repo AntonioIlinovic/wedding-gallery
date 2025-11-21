@@ -80,6 +80,15 @@ docker compose logs -f backend
 docker compose up --build
 ```
 
+## Testing
+
+Tests for the backend are automatically run during the `backend` service startup when you execute `docker compose up --build`.
+
+To run tests manually for the backend service:
+```bash
+docker compose exec backend pytest
+```
+
 ## Project Services
 
 -   `frontend`: The React frontend application.
