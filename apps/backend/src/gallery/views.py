@@ -10,6 +10,7 @@ from rest_framework.pagination import PageNumberPagination
 from django.views.decorators.csrf import csrf_exempt
 from django.core.files.uploadedfile import InMemoryUploadedFile
 from src.events.models import Event
+from src.events.decorators import require_event_token
 from .models import Photo
 from .serializers import PhotoSerializer, PhotoUploadSerializer
 from src.uploads.storage import get_storage_client
@@ -24,18 +25,13 @@ class PhotoPagination(PageNumberPagination):
 
 @csrf_exempt
 @api_view(['POST'])
-def upload_photo(request):
+@require_event_token(token_location='data')
+def upload_photo(request, event):
     """
     Upload a photo for an event.
     Requires access_token and photo file.
+    Event is validated and passed by the decorator.
     """
-    # Get access_token from POST data
-    access_token = request.data.get('access_token')
-    if not access_token:
-        return Response({
-            'error': 'access_token is required'
-        }, status=status.HTTP_400_BAD_REQUEST)
-    
     # Get photo file from FILES
     photo_file = request.FILES.get('photo')
     if not photo_file:
@@ -50,14 +46,6 @@ def upload_photo(request):
         return Response({
             'error': f'Invalid file type. Allowed types: {", ".join(valid_extensions)}'
         }, status=status.HTTP_400_BAD_REQUEST)
-    
-    # Validate event
-    try:
-        event = Event.objects.get(access_token=access_token, is_active=True)
-    except Event.DoesNotExist:
-        return Response({
-            'error': 'Invalid or inactive access token'
-        }, status=status.HTTP_401_UNAUTHORIZED)
     
     # Generate unique file key
     file_extension = os.path.splitext(photo_file.name)[1]
@@ -101,26 +89,13 @@ def upload_photo(request):
 
 
 @api_view(['GET'])
-def list_photos(request):
+@require_event_token(token_location='query')
+def list_photos(request, event):
     """
     List all photos for an event.
     Requires access_token as query parameter.
+    Event is validated and passed by the decorator.
     """
-    access_token = request.query_params.get('access_token')
-    
-    if not access_token:
-        return Response({
-            'error': 'access_token query parameter is required'
-        }, status=status.HTTP_400_BAD_REQUEST)
-    
-    # Validate event
-    try:
-        event = Event.objects.get(access_token=access_token, is_active=True)
-    except Event.DoesNotExist:
-        return Response({
-            'error': 'Invalid or inactive access token'
-        }, status=status.HTTP_401_UNAUTHORIZED)
-    
     # Get photos for this event
     photos = Photo.objects.filter(event=event).order_by('-uploaded_at')
     
