@@ -14,5 +14,7 @@ def health_check(request):
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/health/', health_check, name='health'),
+    path('api/events/', include('src.events.urls')),
+    path('api/gallery/', include('src.gallery.urls')),
 ]
 

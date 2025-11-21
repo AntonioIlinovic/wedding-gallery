@@ -26,8 +26,11 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'corsheaders',
+    # Local apps
     'src',
     'src.config',
+    'src.events',
+    'src.gallery',
 ]
 
 MIDDLEWARE = [
@@ -102,6 +105,12 @@ REST_FRAMEWORK = {
     'DEFAULT_RENDERER_CLASSES': [
         'rest_framework.renderers.JSONRenderer',
     ],
+    # Simple, global pagination for gallery listings
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 50,
+    # Disable CSRF for API views since we use token-based authentication
+    'DEFAULT_AUTHENTICATION_CLASSES': [],
+    'DEFAULT_PERMISSION_CLASSES': [],
 }
 
 # CORS settings (for local development)
@@ -113,4 +122,21 @@ CORS_ALLOWED_ORIGINS = [
 
 if DEBUG:
     CORS_ALLOW_ALL_ORIGINS = True
+
+# CSRF settings - exempt API endpoints
+CSRF_TRUSTED_ORIGINS = [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+]
+
+# Storage configuration
+# In production you will typically point this at AWS S3.
+# For local development we use Minio (S3-compatible).
+AWS_STORAGE_BUCKET_NAME = os.environ.get('AWS_STORAGE_BUCKET_NAME', os.environ.get('MINIO_BUCKET_NAME', 'wedding-gallery'))
+AWS_S3_REGION_NAME = os.environ.get('AWS_S3_REGION_NAME', 'us-east-1')
+USE_MINIO = os.environ.get('USE_MINIO', 'True') == 'True'
+MINIO_ENDPOINT = os.environ.get('MINIO_ENDPOINT', 'http://minio:9000')
+
+# Base URL of the frontend, used when generating QR codes.
+FRONTEND_BASE_URL = os.environ.get('FRONTEND_BASE_URL', 'http://localhost:3000')
 
