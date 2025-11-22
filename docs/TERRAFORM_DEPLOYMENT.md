@@ -21,7 +21,6 @@ Create a dedicated IAM group and user for Terraform, attach the required permiss
 3. Attach the following AWS-managed policies (tighten later if needed):
    - `AmazonVPCFullAccess`
    - `AmazonEC2FullAccess`
-   - `AmazonRDSFullAccess`
    - `AmazonS3FullAccess`
    - `AmazonEC2ContainerRegistryFullAccess`
    - `SecretsManagerFullAccess`
@@ -34,7 +33,6 @@ aws iam create-group --group-name wedding-gallery-full-access-group
 for policy in \
 arn:aws:iam::aws:policy/AmazonVPCFullAccess \
 arn:aws:iam::aws:policy/AmazonEC2FullAccess \
-arn:aws:iam::aws:policy/AmazonRDSFullAccess \
 arn:aws:iam::aws:policy/AmazonS3FullAccess \
 arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryFullAccess \
 arn:aws:iam::aws:policy/SecretsManagerFullAccess \
@@ -168,8 +166,7 @@ terraform plan
 ```
 
 This will show you:
-- Resources to be created (VPC, subnets, EC2, RDS, S3, ECR)
-- Estimated costs (if enabled)
+- Resources to be created (VPC, subnets, EC2, S3, ECR)
 - Any errors or warnings
 
 **Review carefully** - this will create billable AWS resources!
@@ -184,10 +181,6 @@ terraform apply
 
 Terraform will ask for confirmation. Type `yes` to proceed.
 
-**This will take 10-15 minutes** because:
-- RDS instance creation takes time
-- NAT Gateways need to be created
-- EC2 instance needs to boot
 
 ## Step 7: Save the Outputs
 
@@ -206,29 +199,12 @@ terraform output s3_bucket_id
 # EC2 Elastic IP
 terraform output ec2_public_ip
 
-# RDS endpoint
-terraform output rds_endpoint
-
 # ECR repository URLs
 terraform output ecr_backend_repository_url
 terraform output ecr_frontend_repository_url
 ```
 
-## Step 8: Get Database Password
-
-The database password is stored in AWS Secrets Manager:
-
-```bash
-# Get the secret ARN from outputs
-SECRET_ARN=$(terraform output -raw db_password_secret_arn)
-
-# Retrieve the password
-aws secretsmanager get-secret-value \
---secret-id $SECRET_ARN \
---query SecretString --output text
-```
-
-## Step 9: Verify Resources
+## Step 8: Verify Resources
 
 ### Check EC2 Instance
 
@@ -250,14 +226,6 @@ BUCKET=$(terraform output -raw s3_bucket_id)
 aws s3 ls s3://$BUCKET
 ```
 
-### Check RDS Instance
-
-```bash
-# Get RDS endpoint
-RDS_ENDPOINT=$(terraform output -raw rds_endpoint)
-echo $RDS_ENDPOINT
-```
-
 ### Check ECR Repositories
 
 ```bash
@@ -275,15 +243,6 @@ terraform destroy
 ```
 
 This command will prompt you for confirmation before deleting all infrastructure resources defined in your Terraform configuration. **Only run this if you are sure you want to remove everything!**
-
-**Note on Secrets Manager:**
-`terraform destroy` will schedule the database secret for deletion but won't delete it immediately (default recovery window is 30 days). If you try to re-apply the same Terraform configuration, it will fail because the secret name is still in use.
- 
-To force-delete the secret immediately, run this command:
-```bash
-
-aws secretsmanager delete-secret --secret-id wedding-gallery-prod-db-password --force-delete-without-recovery
-```
 
 
 ## Next Steps
