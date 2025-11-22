@@ -5,114 +5,54 @@ on:
 
 jobs:
   test-ssh:
-    name: Test SSH to EC2 and verify secrets
+    name: Test SSH to EC2
     runs-on: ubuntu-latest
 
     steps:
-      - name: Test SSH connection and create secret files
+      - name: Check secrets are set
+        run: |
+          if [ -z "${{ secrets.EC2_HOST }}" ]; then
+            echo "❌ EC2_HOST secret is not set"
+            exit 1
+          fi
+          if [ -z "${{ secrets.EC2_USER }}" ]; then
+            echo "❌ EC2_USER secret is not set"
+            exit 1
+          fi
+          if [ -z "${{ secrets.EC2_SSH_KEY }}" ]; then
+            echo "❌ EC2_SSH_KEY secret is not set"
+            exit 1
+          fi
+          echo "✓ All required secrets are set"
+
+      - name: Test SSH and create secret files
         uses: appleboy/ssh-action@v1.0.0
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
-            set -e
+            echo "✓ SSH Connection Successful!"
+            echo "User: $(whoami)"
+            echo "Directory: $(pwd)"
             
-            echo "=========================================="
-            echo "SSH Connection Successful!"
-            echo "=========================================="
+            # Create test directory
+            mkdir -p ~/ssh-test
+            cd ~/ssh-test
+            
+            # Create files for each secret
+            echo "${{ secrets.AWS_ACCESS_KEY_ID }}" > aws_access_key_id.txt
+            echo "${{ secrets.AWS_SECRET_ACCESS_KEY }}" > aws_secret_access_key.txt
+            echo "${{ secrets.BACKEND_ENV_PROD }}" > backend_env_prod.txt
+            echo "${{ secrets.FRONTEND_ENV_PROD }}" > frontend_env_prod.txt
+            echo "${{ secrets.EC2_HOST }}" > ec2_host.txt
+            echo "${{ secrets.EC2_USER }}" > ec2_user.txt
+            
+            # Show results
             echo ""
-            echo "Current user: $(whoami)"
-            echo "Current directory: $(pwd)"
-            echo "Home directory: $HOME"
-            echo ""
-            
-            # Create a test directory for the secret files
-            TEST_DIR="$HOME/ssh-test-secrets-$(date +%s)"
-            mkdir -p "$TEST_DIR"
-            echo "Created test directory: $TEST_DIR"
-            echo ""
-            
-            # Write AWS_ACCESS_KEY_ID
-            echo "Creating AWS_ACCESS_KEY_ID file..."
-            cat > "$TEST_DIR/AWS_ACCESS_KEY_ID.txt" << 'EOF'
-            ${{ secrets.AWS_ACCESS_KEY_ID }}
-            EOF
-            
-            # Write AWS_SECRET_ACCESS_KEY (masked for security)
-            echo "Creating AWS_SECRET_ACCESS_KEY file..."
-            cat > "$TEST_DIR/AWS_SECRET_ACCESS_KEY.txt" << 'EOF'
-            ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-            EOF
-            
-            # Write BACKEND_ENV_PROD
-            echo "Creating BACKEND_ENV_PROD file..."
-            cat > "$TEST_DIR/BACKEND_ENV_PROD.txt" << 'EOF'
-            ${{ secrets.BACKEND_ENV_PROD }}
-            EOF
-            
-            # Write FRONTEND_ENV_PROD
-            echo "Creating FRONTEND_ENV_PROD file..."
-            cat > "$TEST_DIR/FRONTEND_ENV_PROD.txt" << 'EOF'
-            ${{ secrets.FRONTEND_ENV_PROD }}
-            EOF
-            
-            # Write EC2_HOST
-            echo "Creating EC2_HOST file..."
-            cat > "$TEST_DIR/EC2_HOST.txt" << 'EOF'
-            ${{ secrets.EC2_HOST }}
-            EOF
-            
-            # Write EC2_USER
-            echo "Creating EC2_USER file..."
-            cat > "$TEST_DIR/EC2_USER.txt" << 'EOF'
-            ${{ secrets.EC2_USER }}
-            EOF
-            
-            # Note: EC2_SSH_KEY is not written to a file for security reasons
-            echo "Creating EC2_SSH_KEY metadata file..."
-            echo "SSH key exists and was used for this connection" > "$TEST_DIR/EC2_SSH_KEY_METADATA.txt"
+            echo "Files created in ~/ssh-test:"
+            ls -lh ~/ssh-test
             
             echo ""
-            echo "=========================================="
-            echo "Files created successfully!"
-            echo "=========================================="
-            echo ""
-            
-            # List all created files
-            echo "Files in $TEST_DIR:"
-            ls -lah "$TEST_DIR"
-            echo ""
-            
-            # Show file sizes (helps verify content was written)
-            echo "File sizes:"
-            for file in "$TEST_DIR"/*.txt; do
-              size=$(stat -f%z "$file" 2>/dev/null || stat -c%s "$file" 2>/dev/null)
-              echo "  $(basename "$file"): $size bytes"
-            done
-            echo ""
-            
-            # Display first few characters of each file (to verify content without exposing secrets)
-            echo "Verifying files have content (showing first 20 chars):"
-            for file in "$TEST_DIR"/*.txt; do
-              if [ -s "$file" ]; then
-                preview=$(head -c 20 "$file" | tr '\n' ' ')
-                echo "  $(basename "$file"): '$preview...' ✓"
-              else
-                echo "  $(basename "$file"): EMPTY ✗"
-              fi
-            done
-            echo ""
-            
-            echo "=========================================="
-            echo "Test directory location:"
-            echo "$TEST_DIR"
-            echo ""
-            echo "To inspect these files, SSH into the EC2 instance and run:"
-            echo "  cd $TEST_DIR"
-            echo "  ls -la"
-            echo ""
-            echo "To clean up this test directory, run:"
-            echo "  rm -rf $TEST_DIR"
-            echo "=========================================="
+            echo "To cleanup: rm -rf ~/ssh-test"
 
