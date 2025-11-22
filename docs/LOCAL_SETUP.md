@@ -1,6 +1,6 @@
 # Local Development Setup
 
-This guide explains how to set up and run the application locally using Docker Compose. The local environment includes the backend and frontend applications, a PostgreSQL database, and a MinIO server for S3-compatible object storage. This simulates AWS cloud services locally before deployment.
+This guide explains how to set up and run the application locally using Docker Compose. The local environment includes the backend and frontend applications, and a MinIO server for S3-compatible object storage. This simulates AWS cloud services locally before deployment.
 
 ## Prerequisites
 
@@ -93,6 +93,5 @@ docker compose exec backend pytest
 
 -   `frontend`: The React frontend application.
 -   `backend`: The Django backend application.
--   `postgres`: PostgreSQL database for data persistence.
 -   `minio`: S3-compatible object storage for file uploads.
 -   `mc`: A setup client for MinIO that creates the initial storage bucket.

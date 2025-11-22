@@ -70,30 +70,30 @@ Keep the JSON/CSV secure; you will copy the values into local config files next.
 
 1. Ensure the AWS CLI is installed (`aws --version`).
 2. Create the AWS config directory if it does not exist:
-   ```bash
+```bash
 mkdir -p ~/.aws
-   ```
+```
 3. Copy the example credentials file and edit the placeholders:
-   ```bash
+```bash
 cp infra/terraform/.aws-credentials.example ~/.aws/credentials
 chmod 600 ~/.aws/credentials
 # Edit the placeholders with the keys from terraform-user-wedding-gallery
 ${EDITOR:-nano} ~/.aws/credentials
-   ```
+```
    Replace `YOUR_TERRAFORM_USER_ACCESS_KEY_ID` and `YOUR_TERRAFORM_USER_SECRET_ACCESS_KEY` with the values from the IAM console/CSV.
 4. Create (or update) the AWS config file for the `wedding-gallery` profile:
-   ```bash
+```bash
 cat > ~/.aws/config <<'EOF'
 [profile wedding-gallery]
 region = eu-central-1
 output = json
 EOF
-   ```
+```
    Adjust the region if you plan to deploy to somewhere other than `eu-central-1`.
 5. Test the profile:
-   ```bash
+```bash
 AWS_PROFILE=wedding-gallery aws sts get-caller-identity
-   ```
+```
 
 Terraform will also use this profile (see provider config in `main.tf`). Set `AWS_PROFILE=wedding-gallery` before running `terraform` commands, or export `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY` manually if you prefer environment variables.
 
@@ -110,44 +110,45 @@ If you already have a key pair in AWS:
 ### Option B: Create New Key Pair
 
 1. **Generate SSH key locally** (if you don't have one):
-   ```bash
+```bash
 ssh-keygen -t rsa -b 4096 -f ~/.ssh/aws-wedding-gallery-key
-   ```
+```
 
 2. **Import to AWS**:
-   ```bash
+```bash
 aws ec2 import-key-pair \
 --key-name aws-wedding-gallery-prod \
 --public-key-material fileb://~/.ssh/aws-wedding-gallery-key.pub \
 --region eu-central-1
-   ```
+```
 
    Note the key pair name (e.g., `aws-wedding-gallery-prod`)
 
 ## Step 3: Configure Terraform Variables
 
 1. **Navigate to production environment**:
-   ```bash
+```bash
 cd infra/terraform/envs/prod
-   ```
+```
 
 2. **Copy the example variables file**:
-   ```bash
+```bash
 cp terraform.tfvars.example terraform.tfvars
-   ```
+```
 
 3. **Edit `terraform.tfvars`** with your values:
-   ```bash
+```bash
 # Required: Set your key pair name
 key_pair_name = "aws-wedding-gallery-prod"  # or your existing key pair name
 
 # Required: Restrict SSH access to your IP
 ssh_allowed_cidrs = ["YOUR.IP.ADDRESS/32"]  # Replace with your public IP
+```
 
    **To find your public IP**:
-   ```bash
+```bash
 curl ifconfig.me
-   ```
+```
 
 ## Step 4: Initialize Terraform
 
