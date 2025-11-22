@@ -59,7 +59,6 @@ A single reference file describing the repository structure, the tools and servi
 * **Compute (initial):** Single VM/instance running `docker-compose`
 * **Object Storage:** S3‑compatible storage for photos
 * **Container Registry:** AWS ECR (for built images)
-* **Database:** Managed PostgreSQL
 
 ---
 

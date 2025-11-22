@@ -24,8 +24,8 @@ output "security_group_id" {
 }
 
 output "elastic_ip" {
-  description = "Elastic IP address (if created)"
-  value       = var.associate_public_ip ? aws_eip.ec2[0].public_ip : null
+  description = "Elastic IP address"
+  value       = aws_eip.ec2.public_ip
 }
 
 output "iam_role_name" {

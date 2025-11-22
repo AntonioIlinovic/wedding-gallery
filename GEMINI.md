@@ -8,7 +8,6 @@ The architecture consists of:
 
 *   **Frontend:** A React single-page application built with `create-react-app`.
 *   **Backend:** A Django REST API that provides endpoints for the frontend.
-*   **Database:** A PostgreSQL database for storing application data.
 *   **Storage:** MinIO for local S3-compatible object storage for photos. In production, this would be swapped out for a cloud-based object storage service like AWS S3.
 *   **Infrastructure:** The infrastructure is managed as code using Terraform.
 

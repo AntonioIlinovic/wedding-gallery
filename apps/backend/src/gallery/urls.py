@@ -1,9 +1,11 @@
-"""URL patterns for the gallery application will live here."""
+"""URL patterns for the gallery application."""
+from django.urls import path
+from . import views
 
 app_name = "gallery"
 
 urlpatterns = [
-    # Example:
-    # path("", PhotoListView.as_view(), name="list"),
+    path('upload/', views.upload_photo, name='upload'),
+    path('photos/', views.list_photos, name='list'),
 ]
 

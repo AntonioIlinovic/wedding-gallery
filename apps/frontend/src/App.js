@@ -1,29 +1,81 @@
 import React, { useState, useEffect } from 'react';
+import WelcomePage from './components/WelcomePage';
+import PhotoUpload from './components/PhotoUpload';
+import Gallery from './components/Gallery';
+import { validateToken } from './api';
 import './App.css';
 
 function App() {
-  const [backendStatus, setBackendStatus] = useState('checking...');
+  const [view, setView] = useState('welcome');
+  const [accessToken, setAccessToken] = useState(null);
+  const [event, setEvent] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    // Check backend health (proxy will forward to backend service)
-    fetch('/api/health/')
-      .then(response => response.json())
-      .then(data => {
-        setBackendStatus(data.status === 'ok' ? 'connected' : 'error');
-      })
-      .catch(error => {
-        console.error('Error connecting to backend:', error);
-        setBackendStatus('disconnected');
-      });
+    const checkToken = async () => {
+      const params = new URLSearchParams(window.location.search);
+      const token = params.get('token');
+
+      if (token) {
+        try {
+          const response = await validateToken(token);
+          if (response.valid) {
+            setAccessToken(token);
+            setEvent(response.event);
+          } else {
+            setError('Invalid or expired QR code.');
+          }
+        } catch (err) {
+          setError('Failed to validate access token.');
+          console.error('Token validation error:', err);
+        }
+      } else {
+        setError('No access token provided. Please scan the QR code again.');
+      }
+      setLoading(false);
+    };
+
+    checkToken();
   }, []);
+
+  if (loading) {
+    return (
+      <div className="App-loading">
+        <div className="spinner"></div>
+        <p>Loading wedding gallery...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="App-error">
+        <h1>⚠️ Access Error</h1>
+        <p>{error}</p>
+      </div>
+    );
+  }
+
+  const renderView = () => {
+    switch (view) {
+      case 'upload':
+        return <PhotoUpload accessToken={accessToken} onBack={() => setView('welcome')} />;
+      case 'gallery':
+        return <Gallery accessToken={accessToken} onBack={() => setView('welcome')} />;
+      default:
+        return <WelcomePage event={event} onNavigate={setView} />;
+    }
+  };
 
   return (
     <div className="App">
-      <header className="App-header">
-        <h1>Wedding Gallery</h1>
-        <p>Backend Status: <strong>{backendStatus}</strong></p>
-        <p>Welcome to the wedding gallery application!</p>
-      </header>
+      <main className="App-content">
+        {renderView()}
+      </main>
+      <footer className="App-footer">
+        <p>Made with ❤️ for {event?.name}</p>
+      </footer>
     </div>
   );
 }

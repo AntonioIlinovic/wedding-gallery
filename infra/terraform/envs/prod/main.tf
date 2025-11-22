@@ -11,15 +11,6 @@ terraform {
       version = "~> 3.1"
     }
   }
-
-  # Uncomment and configure for remote state management
-  # backend "s3" {
-  #   bucket         = "your-terraform-state-bucket"
-  #   key            = "prod/terraform.tfstate"
-  #   region         = "us-east-1"
-  #   encrypt        = true
-  #   dynamodb_table = "terraform-state-lock"
-  # }
 }
 
 provider "aws" {
@@ -114,46 +105,6 @@ module "ec2" {
   key_pair_name          = var.key_pair_name
   public_key             = var.public_key
   ssh_allowed_cidrs      = var.ssh_allowed_cidrs
-  associate_public_ip    = true
   user_data              = var.ec2_user_data
   tags                   = local.common_tags
 }
-
-# RDS Module
-module "rds" {
-  source = "../../modules/rds"
-
-  project_name          = local.project_name
-  environment           = local.environment
-  vpc_id                = module.vpc.vpc_id
-  subnet_ids            = module.vpc.private_subnet_ids
-  app_security_group_id = module.ec2.security_group_id
-  instance_class        = var.rds_instance_class
-  allocated_storage     = var.rds_allocated_storage
-  max_allocated_storage = var.rds_max_allocated_storage
-  skip_final_snapshot   = false
-  deletion_protection   = true
-  multi_az              = true
-  performance_insights_enabled = true
-  backup_retention_period = 30
-  tags                  = local.common_tags
-}
-
-resource "aws_iam_role_policy" "ec2_rds_secret" {
-  name = "${local.project_name}-${local.environment}-ec2-rds-secret-policy"
-  role = module.ec2.iam_role_name
-
-  policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Effect = "Allow"
-        Action = [
-          "secretsmanager:GetSecretValue"
-        ]
-        Resource = module.rds.db_password_secret_arn
-      }
-    ]
-  })
-}
-

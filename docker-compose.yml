@@ -9,15 +9,16 @@ services:
     volumes:
       - ./apps/backend:/app
     env_file:
+      - .env
       - apps/backend/.env
     depends_on:
-      - postgres
       - minio
     command: >
       sh -c "python manage.py migrate &&
              export DJANGO_SETTINGS_MODULE=src.config.settings &&
              pytest &&
              python manage.py create_superuser &&
+             python manage.py seed_data &&
              python manage.py runserver 0.0.0.0:8000"
     networks:
       - wedding-gallery-network
@@ -39,18 +40,6 @@ services:
       - WDS_SOCKET_PORT=3000
     depends_on:
       - backend
-    networks:
-      - wedding-gallery-network
-
-  postgres:
-    image: postgres:15-alpine
-    container_name: wedding-gallery-postgres
-    volumes:
-      - postgres_data:/var/lib/postgresql/data/
-    env_file:
-      - .env
-    ports:
-      - "5432:5432"
     networks:
       - wedding-gallery-network
 
@@ -96,7 +85,6 @@ services:
       - wedding-gallery-network
 
 volumes:
-  postgres_data:
   minio_data:
 
 networks:

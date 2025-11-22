@@ -29,8 +29,8 @@ output "ec2_instance_id" {
 }
 
 output "ec2_public_ip" {
-  description = "EC2 instance public IP"
-  value       = module.ec2.instance_public_ip
+  description = "EC2 instance Elastic IP (public IP)"
+  value       = module.ec2.elastic_ip
 }
 
 output "ec2_public_dns" {
@@ -38,6 +38,11 @@ output "ec2_public_dns" {
   value       = module.ec2.instance_public_dns
 }
 
+# RDS Outputs (disabled while RDS module is turned off)
+# TODO: When re-enabling the RDS module in main.tf, also uncomment these
+#       outputs so that the database connection details and password secret
+#       ARN are available in terraform outputs.
+/*
 output "rds_endpoint" {
   description = "RDS instance endpoint"
   value       = module.rds.db_instance_endpoint
@@ -53,4 +58,5 @@ output "db_password_secret_arn" {
   value       = module.rds.db_password_secret_arn
   sensitive   = true
 }
+*/
 

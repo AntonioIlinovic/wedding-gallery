@@ -10,7 +10,6 @@ terraform/
 │   ├── vpc/         # VPC, subnets, NAT gateways, etc.
 │   ├── s3/          # S3 bucket for photo storage
 │   ├── ecr/         # ECR repositories for container images
-│   ├── rds/         # RDS PostgreSQL database
 │   └── ec2/         # EC2 instance for compute
 └── envs/            # Environment-specific configurations
     └── prod/        # Production environment
@@ -29,7 +28,6 @@ terraform/
 The AWS credentials need permissions to create:
 - VPC, Subnets, Internet Gateways, NAT Gateways, Route Tables
 - EC2 Instances, Security Groups, Key Pairs
-- RDS Instances, DB Subnet Groups
 - S3 Buckets
 - ECR Repositories
 - IAM Roles and Policies
@@ -81,22 +79,6 @@ terraform plan
 terraform apply
 ```
 
-## Remote State (Recommended)
-
-Configure remote state in `main.tf` to store Terraform state securely:
-
-```hcl
-terraform {
-  backend "s3" {
-    bucket         = "your-terraform-state-bucket"
-    key            = "prod/terraform.tfstate"
-    region         = "us-east-1"
-    encrypt        = true
-    dynamodb_table = "terraform-state-lock"
-  }
-}
-```
-
 ## Modules
 
 ### VPC Module
@@ -130,36 +112,23 @@ Creates ECR repositories for backend and frontend container images with:
 - `backend_repository_url`
 - `frontend_repository_url`
 
-### RDS Module
-
-Creates a managed PostgreSQL database with:
-- Automatic backups
-- Encryption at rest
-- Secrets Manager integration for password storage
-- Configurable Multi-AZ and Performance Insights
-
-**Outputs:**
-- `db_instance_endpoint`
-- `db_password_secret_arn`
-
 ### EC2 Module
 
 Creates an EC2 instance with:
 - IAM role for S3, ECR, and Secrets Manager access
 - Security group allowing HTTP/HTTPS and SSH
-- Elastic IP (optional)
+- Elastic IP (static public IP for the EC2 instance)
 
 **Outputs:**
 - `instance_id`
-- `instance_public_ip`
+- `instance_public_ip` (Elastic IP)
 - `security_group_id`
+- `elastic_ip` (Elastic IP address)
 
 ## Production Environment Configuration
 
 The production environment (`envs/prod`) is configured with:
-- Instance sizes: t3.medium (EC2), db.t3.small (RDS)
-- Multi-AZ RDS for high availability
-- Deletion protection enabled
+- Instance sizes: t3.nano (EC2)
 - Restricted CORS to specific domains
   - **Production Domain:** [weddinggallery.site](http://weddinggallery.site/)
 - Image retention: 20 images per repository in ECR
@@ -175,16 +144,6 @@ After applying, you can access outputs:
 terraform output
 ```
 
-### Database Password
-
-The database password is stored in AWS Secrets Manager. Retrieve it:
-
-```bash
-aws secretsmanager get-secret-value \
-  --secret-id $(terraform output -raw db_password_secret_arn) \
-  --query SecretString --output text | jq -r .password
-```
-
 ### ECR Login
 
 To push images to ECR:
@@ -195,13 +154,6 @@ aws ecr get-login-password --region us-east-1 | \
   $(terraform output -raw ecr_backend_repository_url | cut -d'/' -f1)
 ```
 
-## Cost Considerations
-
-- **NAT Gateways**: ~$32/month each (2 NAT gateways for high availability)
-- **RDS**: Multi-AZ doubles the cost but provides high availability
-- **EC2**: Instance costs vary by size and usage
-- **S3**: Pay for storage and requests. Lifecycle rules help reduce costs over time
-
 ## Cleanup
 
 To destroy all resources:
@@ -210,26 +162,20 @@ To destroy all resources:
 terraform destroy
 ```
 
-**Warning**: This will delete all resources including databases. Make sure you have backups!
-
-## Troubleshooting
-
-### Common Issues
-
-1. **"Insufficient permissions"**: Check your AWS credentials and IAM permissions
-2. **"Key pair not found"**: Create the key pair in AWS Console or provide `public_key`
-3. **"RDS creation timeout"**: RDS instances can take 10-15 minutes to create
-4. **"Bucket name already exists"**: S3 bucket names are globally unique. The bucket name includes your AWS account ID to avoid conflicts.
+**Warning**: This will delete all resources including databases. Make sure you have backups!  
+**Note on Elastic IP**: The EC2 Elastic IP uses `prevent_destroy` to avoid accidental deletion.  
+Running `terraform destroy` will fail on that resource unless you either:
+- Remove the `prevent_destroy` lifecycle block and re-apply, or
+- Remove the resource from state (`terraform state rm module.ec2.aws_eip.ec2[0]`) and manage/delete it manually in AWS.
 
 ## Next Steps
 
 After infrastructure is provisioned:
 
-1. Configure your application to use the RDS endpoint
-2. Set up CI/CD to push images to ECR
-3. Deploy your application to EC2 using docker-compose
-4. Configure Cloudflare DNS to point [weddinggallery.site](http://weddinggallery.site/) to your EC2 instance
-5. Set up monitoring and alerting
+1. Set up CI/CD to push images to ECR
+2. Deploy your application to EC2 using docker-compose
+3. Configure Cloudflare DNS to point [weddinggallery.site](http://weddinggallery.site/) to your EC2 instance
+4. Set up monitoring and alerting
 
 ## Production Domain
 
@@ -237,6 +183,6 @@ After infrastructure is provisioned:
 
 When configuring production environment:
 - Set `s3_allowed_origins` to include `https://weddinggallery.site` and `https://www.weddinggallery.site`
-- Point Cloudflare DNS A record to the EC2 instance's public IP
+- Point Cloudflare DNS A record to the EC2 instance's Elastic IP
 - Ensure SSL/TLS is configured via Cloudflare
 

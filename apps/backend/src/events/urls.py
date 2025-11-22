@@ -1,9 +1,11 @@
-"""URL patterns for the events application will live here."""
+"""URL patterns for the events application."""
+from django.urls import path
+from . import views
 
 app_name = "events"
 
 urlpatterns = [
-    # Example:
-    # path("", EventListView.as_view(), name="list"),
+    path('validate/', views.validate_token, name='validate'),
+    path('<str:access_token>/', views.event_details, name='details'),
 ]
 
