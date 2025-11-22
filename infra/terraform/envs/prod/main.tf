@@ -105,7 +105,6 @@ module "ec2" {
   key_pair_name          = var.key_pair_name
   public_key             = var.public_key
   ssh_allowed_cidrs      = var.ssh_allowed_cidrs
-  associate_public_ip    = true
   user_data              = var.ec2_user_data
   tags                   = local.common_tags
 }

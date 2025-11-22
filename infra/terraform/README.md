@@ -117,12 +117,13 @@ Creates ECR repositories for backend and frontend container images with:
 Creates an EC2 instance with:
 - IAM role for S3, ECR, and Secrets Manager access
 - Security group allowing HTTP/HTTPS and SSH
-- Elastic IP (optional)
+- Elastic IP (static public IP for the EC2 instance)
 
 **Outputs:**
 - `instance_id`
-- `instance_public_ip`
+- `instance_public_ip` (Elastic IP)
 - `security_group_id`
+- `elastic_ip` (Elastic IP address)
 
 ## Production Environment Configuration
 
@@ -161,6 +162,11 @@ To destroy all resources:
 terraform destroy
 ```
 
+**Warning**: This will delete all resources including databases. Make sure you have backups!  
+**Note on Elastic IP**: The EC2 Elastic IP uses `prevent_destroy` to avoid accidental deletion.  
+Running `terraform destroy` will fail on that resource unless you either:
+- Remove the `prevent_destroy` lifecycle block and re-apply, or
+- Remove the resource from state (`terraform state rm module.ec2.aws_eip.ec2[0]`) and manage/delete it manually in AWS.
 
 ## Next Steps
 
@@ -177,6 +183,6 @@ After infrastructure is provisioned:
 
 When configuring production environment:
 - Set `s3_allowed_origins` to include `https://weddinggallery.site` and `https://www.weddinggallery.site`
-- Point Cloudflare DNS A record to the EC2 instance's public IP
+- Point Cloudflare DNS A record to the EC2 instance's Elastic IP
 - Ensure SSL/TLS is configured via Cloudflare
 

@@ -161,11 +161,18 @@ resource "aws_instance" "main" {
   )
 }
 
-# Elastic IP (optional)
+# Elastic IP
 resource "aws_eip" "ec2" {
-  count  = var.associate_public_ip ? 1 : 0
   domain = "vpc"
   instance = aws_instance.main.id
+
+  lifecycle {
+    # Keep the Elastic IP even if other infrastructure is destroyed.
+    # This is so that the IP configuration for EC2 IP address is not changed if container restarts.
+    # Note: `terraform destroy` will fail unless this block is removed
+    # or the resource is removed from state / deleted manually.
+    prevent_destroy = true
+  }
 
   tags = merge(
     var.tags,

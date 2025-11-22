@@ -29,8 +29,8 @@ output "ec2_instance_id" {
 }
 
 output "ec2_public_ip" {
-  description = "EC2 instance public IP"
-  value       = module.ec2.instance_public_ip
+  description = "EC2 instance Elastic IP (public IP)"
+  value       = module.ec2.elastic_ip
 }
 
 output "ec2_public_dns" {

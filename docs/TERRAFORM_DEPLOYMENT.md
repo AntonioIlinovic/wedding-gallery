@@ -203,7 +203,7 @@ Or view specific outputs:
 # S3 bucket name
 terraform output s3_bucket_id
 
-# EC2 public IP
+# EC2 Elastic IP
 terraform output ec2_public_ip
 
 # RDS endpoint
@@ -242,7 +242,7 @@ INSTANCE_ID=$(terraform output -raw ec2_instance_id)
 # Check instance status
 aws ec2 describe-instances --instance-ids $INSTANCE_ID
 
-# SSH into instance (once it's running)
+# SSH into instance (once it's running, using Elastic IP)
 ssh -i ~/.ssh/aws-wedding-gallery-key ubuntu@$(terraform output -raw ec2_public_ip)
 ```
 
@@ -294,4 +294,4 @@ aws secretsmanager delete-secret --secret-id wedding-gallery-prod-db-password --
 
 - **Deploy application** to EC2 instance. We will use Github Actions workflow to deploy it to running server
 
-- **Configure Cloudflare DNS** to point `weddinggallery.site` to EC2 public IP
+- **Configure Cloudflare DNS** to point `weddinggallery.site` to the EC2 Elastic IP (`ec2_public_ip` output)

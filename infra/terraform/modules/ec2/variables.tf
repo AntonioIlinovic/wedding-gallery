@@ -59,12 +59,6 @@ variable "ssh_allowed_cidrs" {
   default     = ["0.0.0.0/0"]
 }
 
-variable "associate_public_ip" {
-  description = "Associate a public IP address"
-  type        = bool
-  default     = true
-}
-
 variable "user_data" {
   description = "User data script for EC2 instance"
   type        = string
