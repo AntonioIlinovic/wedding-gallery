@@ -110,7 +110,12 @@ module "ec2" {
   tags                   = local.common_tags
 }
 
-# RDS Module
+# RDS Module (disabled for cost savings)
+# TODO: When you are ready to use PostgreSQL on AWS RDS instead of SQLite,
+#       re-enable this module block and the associated IAM policy below.
+#       This will provision the RDS instance and allow EC2 to read the DB
+#       password from Secrets Manager.
+/*
 module "rds" {
   source = "../../modules/rds"
 
@@ -147,4 +152,5 @@ resource "aws_iam_role_policy" "ec2_rds_secret" {
     ]
   })
 }
+*/
 

@@ -65,6 +65,11 @@ TEMPLATES = [
 WSGI_APPLICATION = 'src.config.wsgi.application'
 
 # Database
+# TODO: For production scale or multiple events, consider switching from SQLite to
+#       PostgreSQL (e.g. AWS RDS). When doing so, update this DATABASES setting
+#       to use 'django.db.backends.postgresql' and the appropriate connection
+#       details (host, port, name, user, password).
+#       Also update terraform configuration for RDS.
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
@@ -133,7 +138,7 @@ CSRF_TRUSTED_ORIGINS = [
 # In production you will typically point this at AWS S3.
 # For local development we use Minio (S3-compatible).
 AWS_STORAGE_BUCKET_NAME = os.environ.get('AWS_STORAGE_BUCKET_NAME', os.environ.get('MINIO_BUCKET_NAME', 'wedding-gallery'))
-AWS_S3_REGION_NAME = os.environ.get('AWS_S3_REGION_NAME', 'us-east-1')
+AWS_S3_REGION_NAME = os.environ.get('AWS_S3_REGION_NAME', 'eu-central-1')
 USE_MINIO = os.environ.get('USE_MINIO', 'True') == 'True'
 MINIO_ENDPOINT = os.environ.get('MINIO_ENDPOINT', 'http://minio:9000')
 
