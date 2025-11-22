@@ -190,20 +190,6 @@ After successful deployment, save the important outputs:
 terraform output > terraform-outputs.txt
 ```
 
-Or view specific outputs:
-
-```bash
-# S3 bucket name
-terraform output s3_bucket_id
-
-# EC2 Elastic IP
-terraform output ec2_public_ip
-
-# ECR repository URLs
-terraform output ecr_backend_repository_url
-terraform output ecr_frontend_repository_url
-```
-
 ## Step 8: Verify Resources
 
 ### Check EC2 Instance
@@ -222,8 +208,17 @@ ssh -i ~/.ssh/aws-wedding-gallery-key ubuntu@$(terraform output -raw ec2_public_
 ### Check S3 Bucket
 
 ```bash
+# Get bucket name
 BUCKET=$(terraform output -raw s3_bucket_id)
+
+# Verify bucket exists and show its details
+aws s3api head-bucket --bucket $BUCKET && echo "Bucket exists and is accessible"
+
+# List bucket contents (will be empty if no files uploaded yet)
 aws s3 ls s3://$BUCKET
+
+# Show bucket configuration
+aws s3api get-bucket-location --bucket $BUCKET
 ```
 
 ### Check ECR Repositories
