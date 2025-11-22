@@ -212,9 +212,6 @@ terraform output rds_endpoint
 # ECR repository URLs
 terraform output ecr_backend_repository_url
 terraform output ecr_frontend_repository_url
-
-# Database password secret ARN
-terraform output db_password_secret_arn
 ```
 
 ## Step 8: Get Database Password
