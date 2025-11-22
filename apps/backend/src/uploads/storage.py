@@ -85,22 +85,30 @@ class StorageClient:
     def generate_presigned_url(self, key: str, expires_in: int = 3600) -> str:
         """
         Generate a time-limited URL for reading an object.
-        For Minio in local dev, we replace the internal Docker hostname with localhost.
+        For MinIO, we create URLs with the public endpoint (localhost:9000)
+        so browsers can access them. Signature is calculated for this endpoint.
         """
-        url = self.client.generate_presigned_url(
+        # For MinIO, use a client with public endpoint for presigned URLs
+        if getattr(settings, "USE_MINIO", False):
+            public_client = boto3.client(
+                "s3",
+                endpoint_url=getattr(settings, "MINIO_PUBLIC_ENDPOINT", "http://localhost:9000"),
+                aws_access_key_id=os.environ.get("AWS_ACCESS_KEY_ID", os.environ.get("MINIO_ROOT_USER")),
+                aws_secret_access_key=os.environ.get("AWS_SECRET_ACCESS_KEY", os.environ.get("MINIO_ROOT_PASSWORD")),
+                region_name=getattr(settings, "AWS_S3_REGION_NAME", "eu-central-1"),
+            )
+            return public_client.generate_presigned_url(
+                "get_object",
+                Params={"Bucket": self.bucket_name, "Key": key},
+                ExpiresIn=expires_in,
+            )
+        
+        # For AWS S3, use the regular client
+        return self.client.generate_presigned_url(
             "get_object",
             Params={"Bucket": self.bucket_name, "Key": key},
             ExpiresIn=expires_in,
         )
-        
-        # For local development with Minio, replace internal hostname with localhost
-        # This allows the browser to access the presigned URLs
-        from django.conf import settings
-        if getattr(settings, "USE_MINIO", False):
-            # Replace minio:9000 with localhost:9000 for browser access
-            url = url.replace("minio:9000", "localhost:9000")
-        
-        return url
 
 
 _storage_client: StorageClient | None = None
