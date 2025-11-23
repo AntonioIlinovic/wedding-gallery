@@ -25,15 +25,17 @@ class TestGalleryAPI:
     def test_upload_photo_success(self, client, event, monkeypatch):
         """Test uploading a photo successfully."""
         # Mock S3 storage
-        def mock_upload_file(*args, **kwargs):
-            return None
-        
-        # Using a simple mock for storage client
         class MockStorage:
-            def upload_file(self, *args, **kwargs): return None
-            def generate_presigned_url(self, *args, **kwargs): return "http://mock-url"
-            
-        monkeypatch.setattr("src.uploads.storage.get_storage_client", lambda: MockStorage())
+            def upload_file(self, file_key, file_content, content_type=None):
+                # Mock implementation that does nothing
+                pass
+            def generate_presigned_url(self, key, expires_in=3600):
+                return "http://mock-url"
+        
+        # Reset the global storage client and mock it where it's used
+        import src.uploads.storage
+        monkeypatch.setattr(src.uploads.storage, "_storage_client", None)
+        monkeypatch.setattr("src.gallery.views.get_storage_client", lambda: MockStorage())
 
         url = reverse('gallery:upload')
         
@@ -62,9 +64,13 @@ class TestGalleryAPI:
         """Test listing photos for an event."""
         # Mock storage for presigned URLs
         class MockStorage:
-            def generate_presigned_url(self, *args, **kwargs): return "http://mock-url"
-            
-        monkeypatch.setattr("src.uploads.storage.get_storage_client", lambda: MockStorage())
+            def generate_presigned_url(self, key, expires_in=3600):
+                return "http://mock-url"
+        
+        # Reset the global storage client and mock it where it's used
+        import src.uploads.storage
+        monkeypatch.setattr(src.uploads.storage, "_storage_client", None)
+        monkeypatch.setattr("src.gallery.serializers.get_storage_client", lambda: MockStorage())
         
         # Create some photos
         Photo.objects.create(

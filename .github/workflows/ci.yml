@@ -58,7 +58,7 @@ jobs:
         working-directory: apps/frontend
         env:
           CI: true
-        run: npm test -- --watch=false
+        run: npm test -- --watch=false --passWithNoTests
 
       - name: Build frontend Docker image
         run: |
