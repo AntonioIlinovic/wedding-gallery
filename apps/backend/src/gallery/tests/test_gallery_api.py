@@ -32,10 +32,9 @@ class TestGalleryAPI:
             def generate_presigned_url(self, key, expires_in=3600):
                 return "http://mock-url"
         
-        # Reset the global storage client and mock it where it's used
-        import src.uploads.storage
-        monkeypatch.setattr(src.uploads.storage, "_storage_client", None)
-        monkeypatch.setattr("src.gallery.views.get_storage_client", lambda: MockStorage())
+        # Mock at the source where it's defined
+        mock_storage_instance = MockStorage()
+        monkeypatch.setattr("src.uploads.storage.get_storage_client", lambda: mock_storage_instance)
 
         url = reverse('gallery:upload')
         
@@ -67,10 +66,9 @@ class TestGalleryAPI:
             def generate_presigned_url(self, key, expires_in=3600):
                 return "http://mock-url"
         
-        # Reset the global storage client and mock it where it's used
-        import src.uploads.storage
-        monkeypatch.setattr(src.uploads.storage, "_storage_client", None)
-        monkeypatch.setattr("src.gallery.serializers.get_storage_client", lambda: MockStorage())
+        # Mock at the source where it's defined
+        mock_storage_instance = MockStorage()
+        monkeypatch.setattr("src.uploads.storage.get_storage_client", lambda: mock_storage_instance)
         
         # Create some photos
         Photo.objects.create(
