@@ -113,8 +113,8 @@ jobs:
             export BACKEND_IMAGE=${{ env.ECR_BACKEND_REPO }}:${{ env.IMAGE_TAG }}
             export FRONTEND_IMAGE=${{ env.ECR_FRONTEND_REPO }}:${{ env.IMAGE_TAG }}
 
-            # Pull and start containers
-            $COMPOSE_CMD -f docker-compose.production.yml up -d --remove-orphans
+            # Pull and start containers (needs root to talk to docker daemon)
+            sudo $COMPOSE_CMD -f docker-compose.production.yml up -d --remove-orphans
 
             # Run database migrations
-            $COMPOSE_CMD -f docker-compose.production.yml exec backend python manage.py migrate --noinput
+            sudo $COMPOSE_CMD -f docker-compose.production.yml exec backend python manage.py migrate --noinput
