@@ -106,8 +106,12 @@ jobs:
             cd /opt/wedding-gallery
 
             # Log in Docker on EC2 to ECR so pulls for private images work
-            ECR_REGISTRY="$(echo '${{ env.ECR_BACKEND_REPO }}' | cut -d'/' -f1)"
-            aws ecr get-login-password --region "${{ env.AWS_REGION }}" | sudo docker login --username AWS --password-stdin "$ECR_REGISTRY"
+            # Derive registry host and region directly from the ECR repo URL to avoid region mismatches
+            ECR_BACKEND_REPO="${{ env.ECR_BACKEND_REPO }}"
+            ECR_REGISTRY="$(echo "$ECR_BACKEND_REPO" | cut -d'/' -f1)"          # 528160042133.dkr.ecr.eu-central-1.amazonaws.com
+            ECR_REGION="$(echo "$ECR_REGISTRY" | cut -d'.' -f4)"                # eu-central-1
+            echo "Logging into ECR registry: $ECR_REGISTRY (region: $ECR_REGION)"
+            aws ecr get-login-password --region "$ECR_REGION" | sudo docker login --username AWS --password-stdin "$ECR_REGISTRY"
 
             # Clone repo on first deploy, otherwise pull latest code
             if [ ! -d .git ]; then
