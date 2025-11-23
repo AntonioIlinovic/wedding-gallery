@@ -4,9 +4,10 @@ on:
   workflow_dispatch: {}
 
 env:
-  AWS_REGION: eu-central-1
-  ECR_BACKEND_REPO: 528160042133.dkr.ecr.eu-central-1.amazonaws.com/wedding-gallery-prod-backend
-  ECR_FRONTEND_REPO: 528160042133.dkr.ecr.eu-central-1.amazonaws.com/wedding-gallery-prod-frontend
+  # Non-secret config comes from GitHub variables so it can be changed without editing this file
+  AWS_REGION: ${{ vars.AWS_REGION }}
+  ECR_BACKEND_REPO: ${{ vars.ECR_BACKEND_REPO }}
+  ECR_FRONTEND_REPO: ${{ vars.ECR_FRONTEND_REPO }}
   IMAGE_TAG: ${{ github.sha }}
 
 jobs:
