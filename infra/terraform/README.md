@@ -144,14 +144,10 @@ After applying, you can access outputs:
 terraform output
 ```
 
-### ECR Login
-
-To push images to ECR:
-
+### SSH into EC2
 ```bash
-aws ecr get-login-password --region us-east-1 | \
-  docker login --username AWS --password-stdin \
-  $(terraform output -raw ecr_backend_repository_url | cut -d'/' -f1)
+# SSH into instance (once it's running, using Elastic IP)
+ssh -i ~/.ssh/aws-wedding-gallery-key ubuntu@$(terraform output -raw ec2_public_ip)
 ```
 
 ## Cleanup
