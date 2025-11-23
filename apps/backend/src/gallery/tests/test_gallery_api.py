@@ -32,8 +32,11 @@ class TestGalleryAPI:
             def generate_presigned_url(self, key, expires_in=3600):
                 return "http://mock-url"
         
-        # Mock at the source where it's defined
+        # Mock where it's used:
+        # - views imports get_storage_client directly
+        # - serializers import it from the storage module at call time
         mock_storage_instance = MockStorage()
+        monkeypatch.setattr("src.gallery.views.get_storage_client", lambda: mock_storage_instance)
         monkeypatch.setattr("src.uploads.storage.get_storage_client", lambda: mock_storage_instance)
 
         url = reverse('gallery:upload')
