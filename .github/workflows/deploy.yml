@@ -56,6 +56,28 @@ jobs:
           script: |
             set -e
 
+            # Ensure Docker is installed and running
+            if ! command -v docker >/dev/null 2>&1; then
+              if command -v yum >/dev/null 2>&1; then
+                sudo yum update -y
+                sudo amazon-linux-extras install docker -y || sudo yum install -y docker
+                sudo systemctl enable docker
+                sudo systemctl start docker
+              elif command -v apt-get >/dev/null 2>&1; then
+                sudo apt-get update -y
+                sudo apt-get install -y docker.io
+                sudo systemctl enable docker || true
+                sudo systemctl start docker
+              fi
+            fi
+
+            # Ensure docker-compose is installed
+            if ! command -v docker-compose >/dev/null 2>&1; then
+              sudo curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" \
+                -o /usr/local/bin/docker-compose
+              sudo chmod +x /usr/local/bin/docker-compose
+            fi
+
             # Ensure application directory exists and is owned by current user
             sudo mkdir -p /opt/wedding-gallery
             sudo chown "$USER":"$USER" /opt/wedding-gallery
@@ -85,7 +107,7 @@ jobs:
             export FRONTEND_IMAGE=${{ env.ECR_FRONTEND_REPO }}:${{ env.IMAGE_TAG }}
 
             # Pull and start containers
-            docker compose -f docker-compose.production.yml up -d --remove-orphans
+            docker-compose -f docker-compose.production.yml up -d --remove-orphans
 
             # Run database migrations
-            docker compose -f docker-compose.production.yml exec backend python manage.py migrate --noinput
+            docker-compose -f docker-compose.production.yml exec backend python manage.py migrate --noinput
