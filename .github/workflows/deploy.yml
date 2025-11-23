@@ -109,9 +109,11 @@ jobs:
             ${{ secrets.FRONTEND_ENV_PROD }}
             EOF
 
-            # Export image tags for docker compose
-            export BACKEND_IMAGE=${{ env.ECR_BACKEND_REPO }}:${{ env.IMAGE_TAG }}
-            export FRONTEND_IMAGE=${{ env.ECR_FRONTEND_REPO }}:${{ env.IMAGE_TAG }}
+            # Write .env file for docker compose with image tags
+            cat > .env << EOF
+            BACKEND_IMAGE=${{ env.ECR_BACKEND_REPO }}:${{ env.IMAGE_TAG }}
+            FRONTEND_IMAGE=${{ env.ECR_FRONTEND_REPO }}:${{ env.IMAGE_TAG }}
+            EOF
 
             # Pull and start containers (needs root to talk to docker daemon)
             sudo $COMPOSE_CMD -f docker-compose.production.yml up -d --remove-orphans
