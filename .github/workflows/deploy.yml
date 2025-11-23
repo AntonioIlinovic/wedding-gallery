@@ -71,11 +71,18 @@ jobs:
               fi
             fi
 
-            # Ensure docker-compose is installed
-            if ! command -v docker-compose >/dev/null 2>&1; then
-              sudo curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" \
-                -o /usr/local/bin/docker-compose
-              sudo chmod +x /usr/local/bin/docker-compose
+            # Ensure docker compose / docker-compose is available
+            COMPOSE_CMD="docker compose"
+            if ! docker compose version >/dev/null 2>&1; then
+              if command -v docker-compose >/dev/null 2>&1; then
+                COMPOSE_CMD="docker-compose"
+              else
+                # Fallback: install docker-compose v1
+                sudo curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" \
+                  -o /usr/local/bin/docker-compose
+                sudo chmod +x /usr/local/bin/docker-compose
+                COMPOSE_CMD="docker-compose"
+              fi
             fi
 
             # Ensure application directory exists and is owned by current user
@@ -107,7 +114,7 @@ jobs:
             export FRONTEND_IMAGE=${{ env.ECR_FRONTEND_REPO }}:${{ env.IMAGE_TAG }}
 
             # Pull and start containers
-            docker-compose -f docker-compose.production.yml up -d --remove-orphans
+            $COMPOSE_CMD -f docker-compose.production.yml up -d --remove-orphans
 
             # Run database migrations
-            docker-compose -f docker-compose.production.yml exec backend python manage.py migrate --noinput
+            $COMPOSE_CMD -f docker-compose.production.yml exec backend python manage.py migrate --noinput
