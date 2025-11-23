@@ -71,6 +71,16 @@ jobs:
               fi
             fi
 
+            # Ensure AWS CLI is installed (for ECR login)
+            if ! command -v aws >/dev/null 2>&1; then
+              if command -v yum >/dev/null 2>&1; then
+                sudo yum install -y awscli
+              elif command -v apt-get >/dev/null 2>&1; then
+                sudo apt-get update -y
+                sudo apt-get install -y awscli
+              fi
+            fi
+
             # Ensure docker compose / docker-compose is available
             COMPOSE_CMD="docker compose"
             if ! docker compose version >/dev/null 2>&1; then
@@ -92,9 +102,7 @@ jobs:
 
             # Log in Docker on EC2 to ECR so pulls for private images work
             ECR_REGISTRY="$(echo '${{ env.ECR_BACKEND_REPO }}' | cut -d'/' -f1)"
-            if command -v aws >/dev/null 2>&1; then
-              aws ecr get-login-password --region "${{ env.AWS_REGION }}" | sudo docker login --username AWS --password-stdin "$ECR_REGISTRY"
-            fi
+            aws ecr get-login-password --region "${{ env.AWS_REGION }}" | sudo docker login --username AWS --password-stdin "$ECR_REGISTRY"
 
             # Clone repo on first deploy, otherwise pull latest code
             if [ ! -d .git ]; then
