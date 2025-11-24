@@ -88,19 +88,16 @@ jobs:
               if command -v yum >/dev/null 2>&1; then sudo yum install -y awscli; fi
             fi
 
-            # Determine Compose Command
-            COMPOSE_CMD="docker compose"
+            # Determine Compose Command - always prefer modern docker compose v2
             if ! docker compose version >/dev/null 2>&1; then
-              if command -v docker-compose >/dev/null 2>&1; then
-                COMPOSE_CMD="docker-compose"
-              else
-                # Fallback install
-                sudo curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" \
-                  -o /usr/local/bin/docker-compose
-                sudo chmod +x /usr/local/bin/docker-compose
-                COMPOSE_CMD="docker-compose"
-              fi
+              echo "Installing docker compose v2 CLI plugin..."
+              DOCKER_CONFIG=${DOCKER_CONFIG:-$HOME/.docker}
+              sudo mkdir -p "$DOCKER_CONFIG/cli-plugins"
+              sudo curl -SL "https://github.com/docker/compose/releases/download/v2.29.2/docker-compose-$(uname -s)-$(uname -m)" \
+                -o "$DOCKER_CONFIG/cli-plugins/docker-compose"
+              sudo chmod +x "$DOCKER_CONFIG/cli-plugins/docker-compose"
             fi
+            COMPOSE_CMD="docker compose"
 
             # --- 2. Setup Directory ---
             sudo mkdir -p /opt/wedding-gallery
