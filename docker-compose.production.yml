@@ -12,10 +12,8 @@ services:
     image: ${FRONTEND_IMAGE}
     container_name: wedding-gallery-frontend-prod
     restart: always
-    env_file:
-      - ./apps/frontend/.env.production
     ports:
-      - "80:3000"
+      - "80:80"
     depends_on:
       - backend
 

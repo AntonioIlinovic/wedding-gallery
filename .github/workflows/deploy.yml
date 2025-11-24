@@ -32,12 +32,12 @@ jobs:
 
       - name: Build and push backend image
         run: |
-          docker build -t $ECR_BACKEND_REPO:$IMAGE_TAG apps/backend
+          docker build -f apps/backend/Dockerfile.prod -t $ECR_BACKEND_REPO:$IMAGE_TAG apps/backend
           docker push $ECR_BACKEND_REPO:$IMAGE_TAG
 
       - name: Build and push frontend image
         run: |
-          docker build -t $ECR_FRONTEND_REPO:$IMAGE_TAG apps/frontend
+          docker build -f apps/frontend/Dockerfile.prod -t $ECR_FRONTEND_REPO:$IMAGE_TAG apps/frontend
           docker push $ECR_FRONTEND_REPO:$IMAGE_TAG
 
   deploy:
@@ -128,16 +128,11 @@ jobs:
             fi
 
             # --- 5. Configuration ---
-            mkdir -p apps/backend apps/frontend
+            mkdir -p apps/backend
             
             # Backend Env
             cat > apps/backend/.env.production << 'EOF'
             ${{ secrets.BACKEND_ENV_PROD }}
-            EOF
-            
-            # Frontend Env
-            cat > apps/frontend/.env.production << 'EOF'
-            ${{ secrets.FRONTEND_ENV_PROD }}
             EOF
             
             # Docker Compose Env
