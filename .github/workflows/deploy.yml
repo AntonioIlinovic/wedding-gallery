@@ -88,16 +88,14 @@ jobs:
               if command -v yum >/dev/null 2>&1; then sudo yum install -y awscli; fi
             fi
 
-            # Determine Compose Command - always prefer modern docker compose v2
+            # Ensure docker compose v2 CLI plugin is available for root (used with sudo)
             if ! docker compose version >/dev/null 2>&1; then
               echo "Installing docker compose v2 CLI plugin..."
-              DOCKER_CONFIG=${DOCKER_CONFIG:-$HOME/.docker}
-              sudo mkdir -p "$DOCKER_CONFIG/cli-plugins"
+              sudo mkdir -p /usr/local/lib/docker/cli-plugins
               sudo curl -SL "https://github.com/docker/compose/releases/download/v2.29.2/docker-compose-$(uname -s)-$(uname -m)" \
-                -o "$DOCKER_CONFIG/cli-plugins/docker-compose"
-              sudo chmod +x "$DOCKER_CONFIG/cli-plugins/docker-compose"
+                -o /usr/local/lib/docker/cli-plugins/docker-compose
+              sudo chmod +x /usr/local/lib/docker/cli-plugins/docker-compose
             fi
-            COMPOSE_CMD="docker compose"
 
             # --- 2. Setup Directory ---
             sudo mkdir -p /opt/wedding-gallery
@@ -140,13 +138,13 @@ jobs:
 
             # --- 6. Deploy ---
             echo "Pulling images..."
-            sudo $COMPOSE_CMD -f docker-compose.production.yml pull
+            sudo docker compose -f docker-compose.production.yml pull
 
             echo "Starting services..."
-            sudo $COMPOSE_CMD -f docker-compose.production.yml up -d --remove-orphans
+            sudo docker compose -f docker-compose.production.yml up -d --remove-orphans
 
             echo "Running migrations..."
             # Using -T to disable TTY allocation which can cause issues in CI/scripts
-            sudo $COMPOSE_CMD -f docker-compose.production.yml exec -T backend python manage.py migrate --noinput
+            sudo docker compose -f docker-compose.production.yml exec -T backend python manage.py migrate --noinput
 
             echo "Deployment complete!"
