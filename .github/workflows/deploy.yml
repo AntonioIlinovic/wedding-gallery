@@ -88,13 +88,18 @@ jobs:
               if command -v yum >/dev/null 2>&1; then sudo yum install -y awscli; fi
             fi
 
-            # Ensure docker compose v2 CLI plugin is available for root (used with sudo)
+            # Determine Compose Command
+            COMPOSE_CMD="docker compose"
             if ! docker compose version >/dev/null 2>&1; then
-              echo "Installing docker compose v2 CLI plugin..."
-              sudo mkdir -p /usr/local/lib/docker/cli-plugins
-              sudo curl -SL "https://github.com/docker/compose/releases/download/v2.29.2/docker-compose-$(uname -s)-$(uname -m)" \
-                -o /usr/local/lib/docker/cli-plugins/docker-compose
-              sudo chmod +x /usr/local/lib/docker/cli-plugins/docker-compose
+              if command -v docker-compose >/dev/null 2>&1; then
+                COMPOSE_CMD="docker-compose"
+              else
+                # Fallback install (docker-compose v2 standalone binary)
+                sudo curl -L "https://github.com/docker/compose/releases/download/v2.29.2/docker-compose-$(uname -s)-$(uname -m)" \
+                  -o /usr/local/bin/docker-compose
+                sudo chmod +x /usr/local/bin/docker-compose
+                COMPOSE_CMD="docker-compose"
+              fi
             fi
 
             # --- 2. Setup Directory ---
@@ -123,11 +128,16 @@ jobs:
             fi
 
             # --- 5. Configuration ---
-            mkdir -p apps/backend
+            mkdir -p apps/backend apps/frontend
             
             # Backend Env
             cat > apps/backend/.env.production << 'EOF'
             ${{ secrets.BACKEND_ENV_PROD }}
+            EOF
+            
+            # Frontend Env
+            cat > apps/frontend/.env.production << 'EOF'
+            ${{ secrets.FRONTEND_ENV_PROD }}
             EOF
             
             # Docker Compose Env
@@ -138,13 +148,13 @@ jobs:
 
             # --- 6. Deploy ---
             echo "Pulling images..."
-            sudo docker compose -f docker-compose.production.yml pull
+            sudo $COMPOSE_CMD -f docker-compose.production.yml pull
 
             echo "Starting services..."
-            sudo docker compose -f docker-compose.production.yml up -d --remove-orphans
+            sudo $COMPOSE_CMD -f docker-compose.production.yml up -d --remove-orphans
 
             echo "Running migrations..."
             # Using -T to disable TTY allocation which can cause issues in CI/scripts
-            sudo docker compose -f docker-compose.production.yml exec -T backend python manage.py migrate --noinput
+            sudo $COMPOSE_CMD -f docker-compose.production.yml exec -T backend python manage.py migrate --noinput
 
             echo "Deployment complete!"
