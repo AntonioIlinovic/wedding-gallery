@@ -24,14 +24,14 @@ function App() {
             setAccessToken(token);
             setEvent(response.event);
           } else {
-            setError('Invalid or expired QR code.');
+            setError('Nevažeći ili istekao QR kod.');
           }
         } catch (err) {
-          setError('Failed to validate access token.');
+          setError('Neuspjela validacija pristupnog tokena.');
           console.error('Token validation error:', err);
         }
       } else {
-        setError('No access token provided. Please scan the QR code again.');
+        setError('Nije priložen pristupni token. Molimo skenirajte QR kod ponovno.');
       }
       setLoading(false);
     };
@@ -43,7 +43,7 @@ function App() {
     return (
       <div className="App-loading">
         <div className="spinner"></div>
-        <p>Loading wedding gallery...</p>
+        <p>Učitavanje galerije vjenčanja...</p>
       </div>
     );
   }
@@ -51,7 +51,7 @@ function App() {
   if (error) {
     return (
       <div className="App-error">
-        <h1>⚠️ Access Error</h1>
+        <h1>⚠️ Greška Pristupa</h1>
         <p>{error}</p>
       </div>
     );

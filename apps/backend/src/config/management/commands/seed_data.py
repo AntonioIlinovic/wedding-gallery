@@ -29,26 +29,32 @@ class Command(BaseCommand):
 
         # Create sample wedding event
         if not options['skip_events']:
-            event_code = 'sample-wedding'
+            event_code = 'andelka-anto'
             event_exists = Event.objects.filter(code=event_code).exists()
             
             if event_exists and not options['force']:
                 self.stdout.write(
                     self.style.WARNING(
-                        f'Sample event with code "{event_code}" already exists. '
+                        f'Event with code "{event_code}" already exists. '
                         'Skipping event creation. Use --force to overwrite.'
                     )
                 )
             else:
-                self.stdout.write('Creating sample wedding event...')
+                self.stdout.write('Creating wedding event "Anđelka & Anto"...')
                 try:
+                    cmd_args = [
+                        'create_sample_event',
+                        '--code', event_code,
+                        '--name', 'Anđelka & Anto',
+                        '--generate-qr'
+                    ]
                     if options['force']:
-                        call_command('create_sample_event', '--code', event_code, '--overwrite')
-                    else:
-                        call_command('create_sample_event', '--code', event_code)
+                        cmd_args.append('--overwrite')
+                    
+                    call_command(*cmd_args)
                 except Exception as e:
                     self.stdout.write(
-                        self.style.ERROR(f'Failed to create sample event: {e}')
+                        self.style.ERROR(f'Failed to create event: {e}')
                     )
 
         self.stdout.write(self.style.SUCCESS('Data seeding completed!'))

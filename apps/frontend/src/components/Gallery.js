@@ -96,26 +96,26 @@ function Gallery({ accessToken, onBack }) {
     <div className="gallery">
       <div className="gallery-header">
         <button className="back-button" onClick={onBack}>
-          ← Back
+          ← Natrag
         </button>
-        <h2>Photo Gallery</h2>
+        <h2>Galerija Fotografija</h2>
       </div>
 
       {loading && page === 1 ? (
         <div className="loading-state">
           <div className="spinner"></div>
-          <p>Loading photos...</p>
+          <p>Učitavanje fotografija...</p>
         </div>
       ) : error ? (
         <div className="error-state">
           <p>{error}</p>
-          <button onClick={handleRefresh}>Try Again</button>
+          <button onClick={handleRefresh}>Pokušajte Ponovno</button>
         </div>
       ) : photos.length === 0 ? (
         <div className="empty-state">
           <div className="empty-icon">📷</div>
-          <h3>No Photos Yet</h3>
-          <p>Be the first to share a photo from the event!</p>
+          <h3>Još Nema Fotografija</h3>
+          <p>Budite prvi koji će podijeliti fotografiju s događaja!</p>
         </div>
       ) : (
         <>
@@ -139,7 +139,7 @@ function Gallery({ accessToken, onBack }) {
           {hasMore && (
             <div className="load-more">
               <button onClick={loadMore} disabled={loading}>
-                {loading ? 'Loading...' : 'Load More Photos'}
+                {loading ? 'Učitavanje...' : 'Učitaj Više Fotografija'}
               </button>
             </div>
           )}

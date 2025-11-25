@@ -125,4 +125,7 @@ jobs:
             echo "Running migrations..."
             sudo docker-compose -f docker-compose.production.yml exec -T backend python manage.py migrate --noinput
 
+            echo "Seeding initial data..."
+            sudo docker-compose -f docker-compose.production.yml exec -T backend python manage.py seed_data
+
             echo "Deployment complete!"

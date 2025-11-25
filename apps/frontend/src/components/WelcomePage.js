@@ -11,7 +11,7 @@ function WelcomePage({ event, onNavigate }) {
         <h1 className="welcome-title">{event.name}</h1>
         {event.date && (
           <p className="welcome-date">
-            {new Date(event.date).toLocaleDateString('en-US', {
+            {new Date(event.date).toLocaleDateString('hr-HR', {
               weekday: 'long',
               year: 'numeric',
               month: 'long',
@@ -31,13 +31,13 @@ function WelcomePage({ event, onNavigate }) {
             className="action-button primary"
             onClick={() => onNavigate('upload')}
           >
-            📸 Share Your Photos
+            📸 Podijelite Vaše Fotografije
           </button>
           <button
             className="action-button secondary"
             onClick={() => onNavigate('gallery')}
           >
-            🖼️ View Gallery
+            🖼️ Pogledajte Galeriju
           </button>
         </div>
       </div>

@@ -73,9 +73,9 @@ function PhotoUpload({ accessToken, onBack }) {
     <div className="photo-upload">
       <div className="upload-header">
         <button className="back-button" onClick={onBack}>
-          ← Back
+          ← Natrag
         </button>
-        <h2>Upload Your Photos</h2>
+        <h2>Učitajte Vaše Fotografije</h2>
       </div>
 
       <div
@@ -86,11 +86,11 @@ function PhotoUpload({ accessToken, onBack }) {
         <div className="dropzone-content">
           <div className="upload-icon">📤</div>
           {isDragActive ? (
-            <p>Drop the photos here...</p>
+            <p>Ovdje podijelite fotografije...</p>
           ) : (
             <>
-              <p>Drag and drop photos here, or click to select</p>
-              <small>Supported formats: JPEG, PNG, GIF, WebP</small>
+              <p>Povucite i podijelite fotografije ovdje, ili kliknite za odabir</p>
+              <small>Podržani formati: JPEG, PNG, GIF, WebP</small>
             </>
           )}
         </div>
@@ -98,7 +98,7 @@ function PhotoUpload({ accessToken, onBack }) {
 
       {selectedFiles.length > 0 && (
         <div className="selected-files">
-          <h3>Selected Photos ({selectedFiles.length})</h3>
+          <h3>Odabrane Fotografije ({selectedFiles.length})</h3>
           <div className="file-grid">
             {selectedFiles.map((file) => (
               <div key={file.id} className="file-preview">
@@ -127,14 +127,14 @@ function PhotoUpload({ accessToken, onBack }) {
             onClick={handleUpload}
             disabled={uploading}
           >
-            {uploading ? 'Uploading...' : `Upload ${selectedFiles.length} Photo${selectedFiles.length > 1 ? 's' : ''}`}
+            {uploading ? 'Učitavanje...' : `Učitaj ${selectedFiles.length} ${selectedFiles.length === 1 ? 'fotografiju' : selectedFiles.length < 5 ? 'fotografije' : 'fotografija'}`}
           </button>
         </div>
       )}
 
       {uploadResults.length > 0 && (
         <div className="upload-results">
-          <h3>Upload Results</h3>
+          <h3>Rezultati Učitavanja</h3>
           {uploadResults.map((result, index) => (
             <div
               key={index}
