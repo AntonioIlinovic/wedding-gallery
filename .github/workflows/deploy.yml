@@ -71,6 +71,14 @@ jobs:
             sudo chown "$USER":"$USER" /opt/wedding-gallery
             cd /opt/wedding-gallery
 
+            # Ensure docker-compose is installed
+            if ! command -v docker-compose >/dev/null 2>&1; then
+              echo "Installing docker-compose..."
+              sudo curl -L "https://github.com/docker/compose/releases/download/v2.29.2/docker-compose-$(uname -s)-$(uname -m)" \
+                -o /usr/local/bin/docker-compose
+              sudo chmod +x /usr/local/bin/docker-compose
+            fi
+
             # Login to ECR
             ECR_REGISTRY="$(echo "${{ env.ECR_BACKEND_REPO }}" | cut -d'/' -f1)"
             ECR_REGION="$(echo "$ECR_REGISTRY" | cut -d'.' -f4)"
@@ -101,14 +109,14 @@ jobs:
             FRONTEND_IMAGE=${{ env.ECR_FRONTEND_REPO }}:${{ env.IMAGE_TAG }}
             EOF
 
-            # Deploy with docker compose
+            # Deploy with docker-compose
             echo "Pulling images..."
-            sudo docker compose -f docker-compose.production.yml pull
+            sudo docker-compose -f docker-compose.production.yml pull
 
             echo "Starting services..."
-            sudo docker compose -f docker-compose.production.yml up -d --remove-orphans
+            sudo docker-compose -f docker-compose.production.yml up -d --remove-orphans
 
             echo "Running migrations..."
-            sudo docker compose -f docker-compose.production.yml exec -T backend python manage.py migrate --noinput
+            sudo docker-compose -f docker-compose.production.yml exec -T backend python manage.py migrate --noinput
 
             echo "Deployment complete!"
