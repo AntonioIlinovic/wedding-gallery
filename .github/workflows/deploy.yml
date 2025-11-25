@@ -110,6 +110,12 @@ jobs:
             EOF
 
             # Deploy with docker-compose
+            echo "Stopping and removing existing containers..."
+            sudo docker-compose -f docker-compose.production.yml down -v || true
+            
+            # Remove containers by name if they still exist (handles orphaned containers)
+            sudo docker rm -f wedding-gallery-backend-prod wedding-gallery-frontend-prod 2>/dev/null || true
+
             echo "Pulling images..."
             sudo docker-compose -f docker-compose.production.yml pull
 
