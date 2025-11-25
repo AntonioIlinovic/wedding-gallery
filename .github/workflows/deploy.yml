@@ -64,97 +64,51 @@ jobs:
           envs: AWS_ACCESS_KEY_ID,AWS_SECRET_ACCESS_KEY,AWS_REGION
           script: |
             set -e
-            set -o pipefail # Fail if any command in a pipe fails (crucial for aws | docker login)
-
             echo "Starting deployment..."
 
-            # --- 1. Dependencies Check ---
-            if ! command -v docker >/dev/null 2>&1; then
-              echo "Installing Docker and AWS CLI..."
-              if command -v apt-get >/dev/null 2>&1; then
-                sudo apt-get update
-                sudo apt-get install -y docker.io awscli
-              elif command -v yum >/dev/null 2>&1; then
-                sudo yum update -y
-                sudo amazon-linux-extras install docker -y || sudo yum install -y docker
-                sudo yum install -y awscli
-              fi
-              sudo systemctl enable --now docker
-            fi
-
-            # Ensure AWS CLI is installed (idempotent check)
-            if ! command -v aws >/dev/null 2>&1; then
-              if command -v apt-get >/dev/null 2>&1; then sudo apt-get install -y awscli; fi
-              if command -v yum >/dev/null 2>&1; then sudo yum install -y awscli; fi
-            fi
-
-            # Determine Compose Command
-            COMPOSE_CMD="docker compose"
-            if ! docker compose version >/dev/null 2>&1; then
-              if command -v docker-compose >/dev/null 2>&1; then
-                COMPOSE_CMD="docker-compose"
-              else
-                # Fallback install (docker-compose v2 standalone binary)
-                sudo curl -L "https://github.com/docker/compose/releases/download/v2.29.2/docker-compose-$(uname -s)-$(uname -m)" \
-                  -o /usr/local/bin/docker-compose
-                sudo chmod +x /usr/local/bin/docker-compose
-                COMPOSE_CMD="docker-compose"
-              fi
-            fi
-
-            # --- 2. Setup Directory ---
+            # Setup directory
             sudo mkdir -p /opt/wedding-gallery
             sudo chown "$USER":"$USER" /opt/wedding-gallery
             cd /opt/wedding-gallery
 
-            # --- 3. Authentication ---
-            # Using substitutions from GHA context for Repo/Image info
-            ECR_BACKEND_REPO="${{ env.ECR_BACKEND_REPO }}"
-            ECR_REGISTRY="$(echo "$ECR_BACKEND_REPO" | cut -d'/' -f1)"
+            # Login to ECR
+            ECR_REGISTRY="$(echo "${{ env.ECR_BACKEND_REPO }}" | cut -d'/' -f1)"
             ECR_REGION="$(echo "$ECR_REGISTRY" | cut -d'.' -f4)"
             
-            echo "Verifying AWS identity..."
-            # Check if we can talk to AWS with provided creds
-            aws sts get-caller-identity || { echo "ERROR: AWS authentication failed. Check AWS credentials."; exit 1; }
-
-            echo "Logging into ECR registry: $ECR_REGISTRY (region: $ECR_REGION)"
+            echo "Logging into ECR..."
             aws ecr get-login-password --region "$ECR_REGION" | sudo docker login --username AWS --password-stdin "$ECR_REGISTRY"
 
-            # --- 4. Update Code ---
+            # Update code
             if [ ! -d .git ]; then
               git clone https://github.com/${{ github.repository }} .
             else
               git pull origin main
             fi
 
-            # --- 5. Configuration ---
+            # Create environment files
             mkdir -p apps/backend apps/frontend
             
-            # Backend Env
             cat > apps/backend/.env.production << 'EOF'
             ${{ secrets.BACKEND_ENV_PROD }}
             EOF
             
-            # Frontend Env
             cat > apps/frontend/.env.production << 'EOF'
             ${{ secrets.FRONTEND_ENV_PROD }}
             EOF
             
-            # Docker Compose Env
             cat > .env << EOF
             BACKEND_IMAGE=${{ env.ECR_BACKEND_REPO }}:${{ env.IMAGE_TAG }}
             FRONTEND_IMAGE=${{ env.ECR_FRONTEND_REPO }}:${{ env.IMAGE_TAG }}
             EOF
 
-            # --- 6. Deploy ---
+            # Deploy with docker compose
             echo "Pulling images..."
-            sudo $COMPOSE_CMD -f docker-compose.production.yml pull
+            sudo docker compose -f docker-compose.production.yml pull
 
             echo "Starting services..."
-            sudo $COMPOSE_CMD -f docker-compose.production.yml up -d --remove-orphans
+            sudo docker compose -f docker-compose.production.yml up -d --remove-orphans
 
             echo "Running migrations..."
-            # Using -T to disable TTY allocation which can cause issues in CI/scripts
-            sudo $COMPOSE_CMD -f docker-compose.production.yml exec -T backend python manage.py migrate --noinput
+            sudo docker compose -f docker-compose.production.yml exec -T backend python manage.py migrate --noinput
 
             echo "Deployment complete!"
