@@ -69,7 +69,7 @@ function WelcomePage({ event, onNavigate, accessToken }) {
           <p className="welcome-date">
             {(() => {
               const date = new Date(event.date);
-              return `${date.getDate()}.${date.getMonth() + 1}.${date.getFullYear()}`;
+              return `${date.getDate()}.${date.getMonth() + 1}.${date.getFullYear()}.`;
             })()}
           </p>
         )}
