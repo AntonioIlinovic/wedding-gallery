@@ -127,11 +127,6 @@ function Gallery({ accessToken, onBack }) {
                 onClick={() => openLightbox(photo, index)}
               >
                 <img src={photo.url} alt={photo.original_filename} />
-                <div className="photo-overlay">
-                  <span className="photo-date">
-                    {new Date(photo.uploaded_at).toLocaleDateString()}
-                  </span>
-                </div>
               </div>
             ))}
           </div>
@@ -180,10 +175,6 @@ function Gallery({ accessToken, onBack }) {
             <img src={selectedPhoto.url} alt={selectedPhoto.original_filename} />
             
             <div className="lightbox-info">
-              <p className="lightbox-filename">{selectedPhoto.original_filename}</p>
-              <p className="lightbox-date">
-                {new Date(selectedPhoto.uploaded_at).toLocaleString()}
-              </p>
               <p className="lightbox-counter">
                 {selectedPhotoIndex + 1} / {photos.length}
               </p>
