@@ -39,6 +39,23 @@ function App() {
     checkToken();
   }, []);
 
+  // Update document title based on current view
+  useEffect(() => {
+    if (!event) return;
+
+    switch (view) {
+      case 'upload':
+        document.title = 'Učitajte vaše fotografije';
+        break;
+      case 'gallery':
+        document.title = 'Galerija fotografija';
+        break;
+      default:
+        document.title = event.name;
+        break;
+    }
+  }, [view, event]);
+
   const backgroundStyle = {
     backgroundImage: 'url(/background.jpg)',
     backgroundSize: 'cover',
