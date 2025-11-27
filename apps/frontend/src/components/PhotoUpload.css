@@ -193,6 +193,8 @@
   padding: 10px;
   border-radius: 6px;
   margin-bottom: 8px;
+  min-width: 0;
+  overflow: hidden;
 }
 
 .result-item.success {
@@ -213,11 +215,20 @@
 .result-file {
   flex: 1;
   font-weight: 500;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .result-error {
   font-size: 0.9rem;
   opacity: 0.8;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex-shrink: 1;
 }
 
 @media (max-width: 768px) {

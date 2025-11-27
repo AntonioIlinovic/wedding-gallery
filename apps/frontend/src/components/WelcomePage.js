@@ -1,10 +1,66 @@
 /**
  * Welcome page component showing event information
  */
-import React from 'react';
+import React, { useRef, useState, useCallback } from 'react';
+import { uploadPhoto } from '../api';
 import './WelcomePage.css';
+import './PhotoUpload.css';
 
-function WelcomePage({ event, onNavigate }) {
+function WelcomePage({ event, onNavigate, accessToken }) {
+  const fileInputRef = useRef(null);
+  const [uploading, setUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState({});
+  const [uploadResults, setUploadResults] = useState([]);
+
+  const handleFileSelect = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = useCallback(async (event) => {
+    const files = Array.from(event.target.files || []);
+    if (files.length === 0) return;
+
+    setUploading(true);
+    setUploadResults([]);
+    const results = [];
+
+    for (const file of files) {
+      const fileId = Math.random().toString(36).substring(7);
+      try {
+        const result = await uploadPhoto(
+          accessToken,
+          file,
+          (progress) => {
+            setUploadProgress((prev) => ({
+              ...prev,
+              [fileId]: progress,
+            }));
+          }
+        );
+        results.push({ file: file.name, success: true, data: result });
+      } catch (error) {
+        results.push({
+          file: file.name,
+          success: false,
+          error: error.response?.data?.error || 'Upload failed',
+        });
+      } finally {
+        setUploadProgress((prev) => {
+          const newProgress = { ...prev };
+          delete newProgress[fileId];
+          return newProgress;
+        });
+      }
+    }
+
+    setUploadResults(results);
+    setUploading(false);
+    // Reset file input
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  }, [accessToken]);
+
   return (
     <div className="welcome-page">
       <div className="welcome-hero">
@@ -25,16 +81,25 @@ function WelcomePage({ event, onNavigate }) {
         </div>
 
         <div className="welcome-actions">
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            multiple
+            onChange={handleFileChange}
+            style={{ display: 'none' }}
+          />
           <button
             className="action-button primary"
-            onClick={() => onNavigate('upload')}
+            onClick={handleFileSelect}
+            disabled={uploading}
           >
             <span className="button-icon">
               <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="white">
                 <path d="M440-440ZM120-120q-33 0-56.5-23.5T40-200v-480q0-33 23.5-56.5T120-760h126l74-80h240v80H355l-73 80H120v480h640v-360h80v360q0 33-23.5 56.5T760-120H120Zm640-560v-80h-80v-80h80v-80h80v80h80v80h-80v80h-80ZM440-260q75 0 127.5-52.5T620-440q0-75-52.5-127.5T440-620q-75 0-127.5 52.5T260-440q0 75 52.5 127.5T440-260Zm0-80q-42 0-71-29t-29-71q0-42 29-71t71-29q42 0 71 29t29 71q0 42-29 71t-71 29Z"/>
               </svg>
             </span>
-            <span>Podijelite vaše fotografije</span>
+            <span>{uploading ? 'Učitavanje...' : 'Podijelite vaše fotografije'}</span>
           </button>
           <button
             className="action-button secondary"
@@ -49,6 +114,26 @@ function WelcomePage({ event, onNavigate }) {
           </button>
         </div>
       </div>
+
+      {uploadResults.length > 0 && (
+        <div className="upload-results">
+          <h3>Rezultati učitavanja</h3>
+          {uploadResults.map((result, index) => (
+            <div
+              key={index}
+              className={`result-item ${result.success ? 'success' : 'error'}`}
+            >
+              <span className="result-icon">
+                {result.success ? '✓' : '✗'}
+              </span>
+              <span className="result-file">{result.file}</span>
+              {!result.success && (
+                <span className="result-error">{result.error}</span>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

@@ -89,7 +89,7 @@ function App() {
       case 'gallery':
         return <Gallery accessToken={accessToken} onBack={() => setView('welcome')} />;
       default:
-        return <WelcomePage event={event} onNavigate={setView} />;
+        return <WelcomePage event={event} onNavigate={setView} accessToken={accessToken} />;
     }
   };
 
