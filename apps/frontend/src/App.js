@@ -39,9 +39,17 @@ function App() {
     checkToken();
   }, []);
 
+  const backgroundStyle = {
+    backgroundImage: 'url(/background.jpg)',
+    backgroundSize: 'cover',
+    backgroundPosition: 'center',
+    backgroundRepeat: 'no-repeat',
+    backgroundAttachment: 'fixed'
+  };
+
   if (loading) {
     return (
-      <div className="App-loading">
+      <div className="App-loading" style={backgroundStyle}>
         <div className="spinner"></div>
         <p>Učitavanje galerije vjenčanja...</p>
       </div>
@@ -50,7 +58,7 @@ function App() {
 
   if (error) {
     return (
-      <div className="App-error">
+      <div className="App-error" style={backgroundStyle}>
         <h1>⚠️ Greška Pristupa</h1>
         <p>{error}</p>
       </div>
@@ -69,13 +77,13 @@ function App() {
   };
 
   return (
-    <div className="App">
+    <div 
+      className="App"
+      style={backgroundStyle}
+    >
       <main className="App-content">
         {renderView()}
       </main>
-      <footer className="App-footer">
-        <p>Made with ❤️ for {event?.name}</p>
-      </footer>
     </div>
   );
 }

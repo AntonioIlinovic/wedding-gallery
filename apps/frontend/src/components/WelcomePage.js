@@ -11,12 +11,10 @@ function WelcomePage({ event, onNavigate }) {
         <h1 className="welcome-title">{event.name}</h1>
         {event.date && (
           <p className="welcome-date">
-            {new Date(event.date).toLocaleDateString('hr-HR', {
-              weekday: 'long',
-              year: 'numeric',
-              month: 'long',
-              day: 'numeric',
-            })}
+            {(() => {
+              const date = new Date(event.date);
+              return `${date.getDate()}.${date.getMonth() + 1}.${date.getFullYear()}`;
+            })()}
           </p>
         )}
       </div>
@@ -31,13 +29,23 @@ function WelcomePage({ event, onNavigate }) {
             className="action-button primary"
             onClick={() => onNavigate('upload')}
           >
-            📸 Podijelite Vaše Fotografije
+            <span className="button-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="white">
+                <path d="M440-440ZM120-120q-33 0-56.5-23.5T40-200v-480q0-33 23.5-56.5T120-760h126l74-80h240v80H355l-73 80H120v480h640v-360h80v360q0 33-23.5 56.5T760-120H120Zm640-560v-80h-80v-80h80v-80h80v80h80v80h-80v80h-80ZM440-260q75 0 127.5-52.5T620-440q0-75-52.5-127.5T440-620q-75 0-127.5 52.5T260-440q0 75 52.5 127.5T440-260Zm0-80q-42 0-71-29t-29-71q0-42 29-71t71-29q42 0 71 29t29 71q0 42-29 71t-71 29Z"/>
+              </svg>
+            </span>
+            <span>Podijelite Vaše Fotografije</span>
           </button>
           <button
             className="action-button secondary"
             onClick={() => onNavigate('gallery')}
           >
-            🖼️ Pogledajte Galeriju
+            <span className="button-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="white">
+                <path d="M360-400h400L622-580l-92 120-62-80-108 140Zm-40 160q-33 0-56.5-23.5T240-320v-480q0-33 23.5-56.5T320-880h480q33 0 56.5 23.5T880-800v480q0 33-23.5 56.5T800-240H320Zm0-80h480v-480H320v480ZM160-80q-33 0-56.5-23.5T80-160v-560h80v560h560v80H160Zm160-720v480-480Z"/>
+              </svg>
+            </span>
+            <span>Pogledajte Galeriju</span>
           </button>
         </div>
       </div>
