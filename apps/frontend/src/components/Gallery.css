@@ -19,20 +19,20 @@
 
 .back-button {
   padding: 8px 16px;
-  background: linear-gradient(135deg, #c0c0c0 0%, #a8a8a8 100%);
-  border: 2px solid #6b46c1;
-  border-radius: 6px;
+  background: linear-gradient(135deg, #6b46c1 0%, #7c3aed 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
   cursor: pointer;
   font-size: 0.95rem;
-  transition: all 0.2s;
-  color: #6b46c1;
+  transition: all 0.3s ease;
   font-weight: 500;
 }
 
 .back-button:hover {
-  background: linear-gradient(135deg, #d4d4d4 0%, #b8b8b8 100%);
-  transform: translateY(-1px);
-  box-shadow: 0 2px 8px rgba(107, 70, 193, 0.3);
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(107, 70, 193, 0.4);
+  background: linear-gradient(135deg, #7c3aed 0%, #8b5cf6 100%);
 }
 
 
