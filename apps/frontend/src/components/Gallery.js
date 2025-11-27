@@ -98,7 +98,7 @@ function Gallery({ accessToken, onBack }) {
         <button className="back-button" onClick={onBack}>
           ← Natrag
         </button>
-        <h2>Galerija Fotografija</h2>
+        <h2>Galerija fotografija</h2>
       </div>
 
       {loading && page === 1 ? (
@@ -109,13 +109,13 @@ function Gallery({ accessToken, onBack }) {
       ) : error ? (
         <div className="error-state">
           <p>{error}</p>
-          <button onClick={handleRefresh}>Pokušajte Ponovno</button>
+          <button onClick={handleRefresh}>Pokušajte ponovno</button>
         </div>
       ) : photos.length === 0 ? (
         <div className="empty-state">
           <div className="empty-icon">📷</div>
-          <h3>Još Nema Fotografija</h3>
-          <p>Budite prvi koji će podijeliti fotografiju s događaja!</p>
+          <h3>Još nema fotografija</h3>
+          <p>Budite prvi koji će podijeliti fotografije sa vjenčanja!</p>
         </div>
       ) : (
         <>
@@ -139,7 +139,7 @@ function Gallery({ accessToken, onBack }) {
           {hasMore && (
             <div className="load-more">
               <button onClick={loadMore} disabled={loading}>
-                {loading ? 'Učitavanje...' : 'Učitaj Više Fotografija'}
+                {loading ? 'Učitavanje...' : 'Učitaj više fotografija'}
               </button>
             </div>
           )}

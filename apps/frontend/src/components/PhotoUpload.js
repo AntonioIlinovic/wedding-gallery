@@ -75,7 +75,7 @@ function PhotoUpload({ accessToken, onBack }) {
         <button className="back-button" onClick={onBack}>
           ← Natrag
         </button>
-        <h2>Učitajte Vaše Fotografije</h2>
+        <h2>Učitajte vaše fotografije</h2>
       </div>
 
       <div
@@ -134,7 +134,7 @@ function PhotoUpload({ accessToken, onBack }) {
 
       {uploadResults.length > 0 && (
         <div className="upload-results">
-          <h3>Rezultati Učitavanja</h3>
+          <h3>Rezultati učitavanja</h3>
           {uploadResults.map((result, index) => (
             <div
               key={index}
