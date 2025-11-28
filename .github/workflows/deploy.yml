@@ -79,6 +79,33 @@ jobs:
               sudo chmod +x /usr/local/bin/docker-compose
             fi
 
+            # Ensure AWS CLI is installed
+            if ! command -v aws >/dev/null 2>&1; then
+              echo "Installing AWS CLI..."
+              
+              # Install unzip if not present (required for AWS CLI installation)
+              if ! command -v unzip >/dev/null 2>&1; then
+                echo "Installing unzip..."
+                if command -v yum >/dev/null 2>&1; then
+                  sudo yum install -y unzip
+                elif command -v apt-get >/dev/null 2>&1; then
+                  sudo apt-get update -qq && sudo apt-get install -y unzip
+                else
+                  echo "Error: Cannot determine package manager (yum/apt-get not found)"
+                  exit 1
+                fi
+              fi
+              
+              # Detect architecture and install AWS CLI v2
+              ARCH="$(uname -m)"
+              [ "$ARCH" = "x86_64" ] && ARCH="x86_64" || ARCH="aarch64"
+              curl -sSL "https://awscli.amazonaws.com/awscli-exe-linux-${ARCH}.zip" -o /tmp/awscliv2.zip
+              unzip -q /tmp/awscliv2.zip -d /tmp
+              sudo /tmp/aws/install
+              rm -rf /tmp/awscliv2.zip /tmp/aws
+              echo "AWS CLI installed successfully"
+            fi
+
             # Login to ECR
             ECR_REGISTRY="$(echo "${{ env.ECR_BACKEND_REPO }}" | cut -d'/' -f1)"
             ECR_REGION="$(echo "$ECR_REGISTRY" | cut -d'.' -f4)"
