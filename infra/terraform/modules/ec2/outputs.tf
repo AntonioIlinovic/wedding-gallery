@@ -25,7 +25,7 @@ output "security_group_id" {
 
 output "elastic_ip" {
   description = "Elastic IP address"
-  value       = aws_eip.ec2.public_ip
+  value       = data.aws_eip.ec2.public_ip
 }
 
 output "iam_role_name" {

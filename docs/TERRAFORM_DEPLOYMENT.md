@@ -122,6 +122,44 @@ aws ec2 import-key-pair \
 
    Note the key pair name (e.g., `aws-wedding-gallery-prod`)
 
+## Step 2.5: Create Elastic IP (Manual Step)
+
+**Important:** The Elastic IP must be created manually in AWS before running Terraform. This is because:
+
+1. **DNS Configuration**: The Elastic IP address is used in DNS records (e.g., Cloudflare). If Terraform managed the EIP and destroyed/recreated it during `terraform destroy` and `terraform apply` cycles, the IP would change, breaking DNS configuration.
+2. **Persistence**: By keeping the EIP outside Terraform management, you can safely destroy and recreate infrastructure without losing the static IP address.
+
+### Create the Elastic IP
+
+1. **Via AWS Console:**
+   - Go to EC2 → Elastic IPs → **Allocate Elastic IP address**
+   - Select **Amazon's pool of IPv4 addresses**
+   - Click **Allocate**
+   - Select the newly created EIP and click **Actions → Edit tags**
+   - Add a tag: `Name` = `wedding-gallery-prod-ec2-eip` (adjust if using different project/environment names)
+   - **Do NOT associate it with any instance yet** - Terraform will handle the association
+
+2. **Via AWS CLI:**
+```bash
+# Allocate the Elastic IP
+ALLOCATION_ID=$(aws ec2 allocate-address \
+  --domain vpc \
+  --region eu-central-1 \
+  --query 'AllocationId' \
+  --output text)
+
+# Tag it with the expected name
+aws ec2 create-tags \
+  --resources $ALLOCATION_ID \
+  --tags Key=Name,Value=wedding-gallery-prod-ec2-eip \
+  --region eu-central-1
+
+echo "Elastic IP Allocation ID: $ALLOCATION_ID"
+echo "Note this IP address - you'll need it for DNS configuration"
+```
+
+**Note:** The Elastic IP name tag must match the pattern `${project_name}-${environment}-ec2-eip`. For production, this should be `wedding-gallery-prod-ec2-eip`.
+
 ## Step 3: Configure Terraform Variables
 
 1. **Navigate to production environment**:
@@ -238,6 +276,19 @@ terraform destroy
 ```
 
 This command will prompt you for confirmation before deleting all infrastructure resources defined in your Terraform configuration. **Only run this if you are sure you want to remove everything!**
+
+**Note:** The Elastic IP is **not** managed by Terraform and will **not** be destroyed. It will remain allocated in your AWS account. If you want to release it, you must do so manually via the AWS Console or CLI:
+
+```bash
+# Find the Elastic IP allocation ID
+aws ec2 describe-addresses \
+  --filters "Name=tag:Name,Values=wedding-gallery-prod-ec2-eip" \
+  --query 'Addresses[0].AllocationId' \
+  --output text
+
+# Release it (replace ALLOCATION_ID with the actual ID)
+aws ec2 release-address --allocation-id ALLOCATION_ID
+```
 
 
 ## Next Steps

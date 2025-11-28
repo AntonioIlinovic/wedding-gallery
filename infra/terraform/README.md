@@ -117,7 +117,13 @@ Creates ECR repositories for backend and frontend container images with:
 Creates an EC2 instance with:
 - IAM role for S3, ECR, and Secrets Manager access
 - Security group allowing HTTP/HTTPS and SSH
-- Elastic IP (static public IP for the EC2 instance)
+- Elastic IP association (references a manually created Elastic IP)
+
+**Important:** The Elastic IP must be created manually in AWS before running Terraform. See the [Terraform Deployment Guide](../docs/TERRAFORM_DEPLOYMENT.md) for instructions.
+
+**Why is the Elastic IP manual?**
+- The Elastic IP address is used in DNS records (e.g., Cloudflare). If Terraform managed the EIP and destroyed/recreated it during `terraform destroy` and `terraform apply` cycles, the IP would change, breaking DNS configuration.
+- By keeping the EIP outside Terraform management, you can safely destroy and recreate infrastructure without losing the static IP address.
 
 **Outputs:**
 - `instance_id`
@@ -158,11 +164,20 @@ To destroy all resources:
 terraform destroy
 ```
 
-**Warning**: This will delete all resources including databases. Make sure you have backups!  
-**Note on Elastic IP**: The EC2 Elastic IP uses `prevent_destroy` to avoid accidental deletion.  
-Running `terraform destroy` will fail on that resource unless you either:
-- Remove the `prevent_destroy` lifecycle block and re-apply, or
-- Remove the resource from state (`terraform state rm module.ec2.aws_eip.ec2[0]`) and manage/delete it manually in AWS.
+**Warning**: This will delete all resources except Elastic IP. Make sure you have backups!
+
+**Note on Elastic IP**: The Elastic IP is **not** managed by Terraform and will **not** be destroyed. It will remain allocated in your AWS account. The EIP association will be removed, but the Elastic IP itself persists. If you want to release it, you must do so manually via the AWS Console or CLI:
+
+```bash
+# Find and release the Elastic IP
+aws ec2 describe-addresses \
+  --filters "Name=tag:Name,Values=wedding-gallery-prod-ec2-eip" \
+  --query 'Addresses[0].AllocationId' \
+  --output text
+
+# Release it (replace ALLOCATION_ID with the actual ID)
+aws ec2 release-address --allocation-id ALLOCATION_ID
+```
 
 ## Next Steps
 
