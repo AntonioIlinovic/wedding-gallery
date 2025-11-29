@@ -201,6 +201,9 @@ jobs:
             echo "Running migrations..."
             sudo docker-compose -f docker-compose.production.yml exec -T backend python manage.py migrate --noinput
 
+            echo "Creating superuser..."
+            sudo docker-compose -f docker-compose.production.yml exec -T backend python manage.py create_superuser
+
             echo "Seeding initial data..."
             sudo docker-compose -f docker-compose.production.yml exec -T backend python manage.py seed_data
 
