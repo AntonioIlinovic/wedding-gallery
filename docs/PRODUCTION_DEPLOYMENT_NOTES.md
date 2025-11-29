@@ -131,6 +131,16 @@ ssh -i ~/.ssh/aws-wedding-gallery-key -L 9001:localhost:8000 ubuntu@63.179.218.1
 # http://localhost:9001/admin
 ```
 
+## Environment Variables for Production
+
+Make sure your `BACKEND_ENV_PROD` secret in GitHub Actions includes:
+
+```bash
+CSRF_TRUSTED_ORIGINS=https://weddinggallery.site,https://www.weddinggallery.site
+```
+
+This allows Django admin to work properly with CSRF protection when accessed through the production domain.
+
 ## Getting the Access Token
 
 1. Log into Django admin (see above)

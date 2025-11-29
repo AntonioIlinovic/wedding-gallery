@@ -101,6 +101,7 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 STATIC_URL = 'static/'
+STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 # Default primary key field type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
@@ -133,6 +134,17 @@ CSRF_TRUSTED_ORIGINS = [
     "http://localhost:3000",
     "http://127.0.0.1:3000",
 ]
+
+# Add production domain to CSRF trusted origins if provided
+csrf_origins = os.environ.get('CSRF_TRUSTED_ORIGINS', '').split(',')
+if csrf_origins and csrf_origins[0]:
+    CSRF_TRUSTED_ORIGINS.extend([origin.strip() for origin in csrf_origins if origin.strip()])
+
+# Security settings for production behind proxy (Cloudflare)
+if not DEBUG:
+    # Trust X-Forwarded-Proto header from nginx/Cloudflare
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+    SECURE_SSL_REDIRECT = False  # Cloudflare handles SSL termination
 
 # Storage configuration
 # In production you will typically point this at AWS S3.
