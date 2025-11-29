@@ -112,19 +112,23 @@ docker network rm wedding-network
 
 ## Accessing Django Admin in Production
 
-Since port 8000 is not exposed publicly (security), use SSH tunneling:
+Django admin is accessible directly through the public site via nginx proxy:
+
+**Access at:** `https://weddinggallery.site/admin/`
+
+The frontend nginx configuration automatically proxies `/admin/` requests to the Django backend, so no SSH tunneling is required.
+
+**Alternative (SSH tunneling):** If you prefer to access the backend directly, you can use SSH tunneling:
 
 ```bash
-# Create SSH tunnel (using port 9000 locally since 8000 is in use)
-ssh -i ~/.ssh/aws-wedding-gallery-key -L 9000:localhost:8000 ubuntu@63.179.218.184
+# Remove old host key if needed
+ssh-keygen -R 63.179.218.184
+
+# Create SSH tunnel (using port 9001 locally since 9000 is used by MinIO)
+ssh -i ~/.ssh/aws-wedding-gallery-key -L 9001:localhost:8000 ubuntu@63.179.218.184
 
 # Then access admin at:
-# http://localhost:9000/admin
-```
-
-Or temporarily access via the EC2 IP directly:
-```
-http://63.179.218.184:8000/admin
+# http://localhost:9001/admin
 ```
 
 ## Getting the Access Token

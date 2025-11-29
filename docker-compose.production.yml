@@ -7,6 +7,8 @@ services:
       - ./apps/backend/.env.production
     ports:
       - "8000:8000"
+    networks:
+      - wedding-gallery-network
 
   frontend:
     image: ${FRONTEND_IMAGE}
@@ -16,4 +18,10 @@ services:
       - "80:80"
     depends_on:
       - backend
+    networks:
+      - wedding-gallery-network
+
+networks:
+  wedding-gallery-network:
+    driver: bridge
 
