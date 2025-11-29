@@ -3,6 +3,7 @@ Management command to generate QR codes for events.
 """
 import os
 from django.core.management.base import BaseCommand, CommandError
+from django.conf import settings
 from src.events.models import Event
 
 
@@ -21,17 +22,12 @@ class Command(BaseCommand):
             default='qr_codes',
             help='Output directory for QR code images (default: qr_codes)'
         )
-        parser.add_argument(
-            '--frontend-url',
-            type=str,
-            default='http://localhost:3000',
-            help='Frontend URL to embed in QR code (default: http://localhost:3000)'
-        )
 
     def handle(self, *args, **options):
         event_code = options['event_code']
         output_dir = options['output']
-        frontend_url = options['frontend_url']
+        # Get frontend URL from settings (loaded from FRONTEND_BASE_URL env variable)
+        frontend_url = getattr(settings, 'FRONTEND_BASE_URL', 'http://localhost:3000')
 
         try:
             event = Event.objects.get(code=event_code)
