@@ -46,7 +46,6 @@ class Command(BaseCommand):
                         'create_sample_event',
                         '--code', event_code,
                         '--name', 'Anđelka & Anto',
-                        '--generate-qr'
                     ]
                     if options['force']:
                         cmd_args.append('--overwrite')
