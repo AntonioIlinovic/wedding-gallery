@@ -22,7 +22,7 @@ def _build_s3_client() -> BaseClient:
     Build a boto3 S3 client pointing either at AWS or at Minio.
     """
     use_minio = getattr(settings, "USE_MINIO", False)
-    region_name = getattr(settings, "AWS_S3_REGION_NAME", "us-east-1")
+    region_name = getattr(settings, "AWS_S3_REGION_NAME", "eu-central-1")
 
     access_key = os.environ.get("AWS_ACCESS_KEY_ID", os.environ.get("MINIO_ROOT_USER"))
     secret_key = os.environ.get(
