@@ -6,9 +6,8 @@ from __future__ import annotations
 
 from django.db import models
 from django.utils import timezone
-
 from src.events.models import Event
-
+from src.uploads.storage import get_storage_client
 
 class Photo(models.Model):
     """
@@ -26,13 +25,13 @@ class Photo(models.Model):
     )
     original_filename = models.CharField(max_length=255, blank=True)
     uploaded_at = models.DateTimeField(default=timezone.now, editable=False)
-    file_size = models.BigIntegerField(null=True, blank=True)
-    content_type = models.CharField(max_length=255, blank=True)
-    thumbnail_key = models.CharField(
-        max_length=512,
-        blank=True,
-        help_text="Optional key/path for a thumbnail version of the image.",
-    )
+
+    @property
+    def image_url(self) -> str:
+        """
+        Returns a presigned URL to the image file.
+        """
+        return get_storage_client().generate_presigned_url(self.file_key)
 
     class Meta:
         ordering = ["-uploaded_at"]
