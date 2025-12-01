@@ -26,7 +26,7 @@ class PhotoAdmin(admin.ModelAdmin):
     def thumbnail_preview(self, obj):
         if obj.file_key:
             return format_html(
-                '<img src="{}" style="width: 200px; height: 200px; object-fit: cover; border-radius: 4px;" />',
+                '<img src="{}" style="width: 300px; height: 300px; object-fit: contain; border-radius: 4px;" />',
                 obj.image_url,
             )
         return "No Image"
