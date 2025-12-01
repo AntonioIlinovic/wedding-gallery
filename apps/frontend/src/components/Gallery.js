@@ -1,7 +1,7 @@
 /**
  * Gallery component to display photos
  */
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { getPhotos } from '../api';
 import './Gallery.css';
 
@@ -13,10 +13,54 @@ function Gallery({ accessToken, onBack }) {
   const [selectedPhotoIndex, setSelectedPhotoIndex] = useState(null);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(false);
+  const [totalPhotos, setTotalPhotos] = useState(0);
+  const loader = useRef(null);
+
+  const loadPhotos = async () => {
+    try {
+      setLoading(true);
+      const data = await getPhotos(accessToken, page);
+      
+      setPhotos((prev) => [...prev, ...data.results]);
+      setHasMore(!!data.next);
+      setTotalPhotos(data.count); // Assume API returns total count
+      setError(null);
+    } catch (err) {
+      setError('Failed to load photos');
+      console.error('Error loading photos:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
     loadPhotos();
-  }, [accessToken, page]);
+  }, [page, accessToken]);
+
+  useEffect(() => {
+    const handleObserver = (entities) => {
+      const target = entities[0];
+      if (target.isIntersecting && hasMore && !loading) {
+        setPage((prev) => prev + 1);
+      }
+    };
+
+    const observer = new IntersectionObserver(handleObserver, {
+      root: null,
+      rootMargin: '20px',
+      threshold: 1.0,
+    });
+
+    if (loader.current) {
+      observer.observe(loader.current);
+    }
+
+    return () => {
+      if (loader.current) {
+        observer.unobserve(loader.current);
+      }
+    };
+  }, [hasMore, loading, loader.current]);
 
   // Keyboard navigation for lightbox
   useEffect(() => {
@@ -34,36 +78,12 @@ function Gallery({ accessToken, onBack }) {
 
     window.addEventListener('keydown', handleKeyPress);
     return () => window.removeEventListener('keydown', handleKeyPress);
-  }, [selectedPhoto, selectedPhotoIndex, photos]);
-
-  const loadPhotos = async () => {
-    try {
-      setLoading(true);
-      const data = await getPhotos(accessToken, page);
-      
-      if (page === 1) {
-        setPhotos(data.results);
-      } else {
-        setPhotos((prev) => [...prev, ...data.results]);
-      }
-      
-      setHasMore(!!data.next);
-      setError(null);
-    } catch (err) {
-      setError('Failed to load photos');
-      console.error('Error loading photos:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
+  }, [selectedPhoto, selectedPhotoIndex, photos, hasMore, loading]);
 
   const handleRefresh = () => {
     setPage(1);
+    setPhotos([]);
     loadPhotos();
-  };
-
-  const loadMore = () => {
-    setPage((prev) => prev + 1);
   };
 
   const openLightbox = (photo, index) => {
@@ -81,6 +101,8 @@ function Gallery({ accessToken, onBack }) {
       const nextIndex = selectedPhotoIndex + 1;
       setSelectedPhotoIndex(nextIndex);
       setSelectedPhoto(photos[nextIndex]);
+    } else if (hasMore && !loading) {
+      setPage((prev) => prev + 1);
     }
   };
 
@@ -132,10 +154,8 @@ function Gallery({ accessToken, onBack }) {
           </div>
 
           {hasMore && (
-            <div className="load-more">
-              <button onClick={loadMore} disabled={loading}>
-                {loading ? 'Učitavanje...' : 'Učitaj više fotografija'}
-              </button>
+            <div ref={loader} className="loading-more">
+              <div className="spinner"></div>
             </div>
           )}
         </>
@@ -160,10 +180,11 @@ function Gallery({ accessToken, onBack }) {
           )}
           
           {/* Next button - fixed position on right */}
-          {selectedPhotoIndex < photos.length - 1 && (
+          {(selectedPhotoIndex < photos.length - 1 || hasMore) && (
             <button 
               className="lightbox-nav lightbox-nav-next" 
               onClick={(e) => { e.stopPropagation(); navigateNext(); }}
+              disabled={loading}
             >
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
                 <polyline points="9 18 15 12 9 6"></polyline>
@@ -176,7 +197,7 @@ function Gallery({ accessToken, onBack }) {
             
             <div className="lightbox-info">
               <p className="lightbox-counter">
-                {selectedPhotoIndex + 1} / {photos.length}
+                {selectedPhotoIndex + 1} / {totalPhotos > 0 ? totalPhotos : photos.length}
               </p>
             </div>
           </div>
@@ -187,4 +208,3 @@ function Gallery({ accessToken, onBack }) {
 }
 
 export default Gallery;
-

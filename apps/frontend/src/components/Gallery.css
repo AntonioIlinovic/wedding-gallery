@@ -166,6 +166,13 @@
   transform: none;
 }
 
+.loading-more {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+}
+
 .lightbox {
   position: fixed;
   top: 0;
