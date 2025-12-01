@@ -25,6 +25,8 @@ class Photo(models.Model):
     )
     original_filename = models.CharField(max_length=255, blank=True)
     uploaded_at = models.DateTimeField(default=timezone.now, editable=False)
+    file_size = models.BigIntegerField(null=True, blank=True)
+    content_type = models.CharField(max_length=255, blank=True)
 
     @property
     def image_url(self) -> str:

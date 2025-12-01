@@ -20,11 +20,11 @@ class EventAdmin(admin.ModelAdmin):
     list_display = ("name", "qr_code_thumbnail", "code", "date", "is_active", "photo_count")
     list_filter = ("is_active", "date", "created_at")
     search_fields = ("name", "code", "description")
-    readonly_fields = ("access_token", "created_at", "updated_at")
+    readonly_fields = ("access_token", "created_at", "updated_at", "access_url")
 
     fieldsets = (
         ("Basic Information", {"fields": ("name", "code", "description", "date", "is_active")}),
-        ("Access Information", {"fields": ("access_token",)}),
+        ("Access Information", {"fields": ("access_token", "access_url")}),
         ("Timestamps", {"fields": ("created_at", "updated_at"), "classes": ("collapse",)}),
     )
 
@@ -75,5 +75,14 @@ class EventAdmin(admin.ModelAdmin):
 
     photo_count.short_description = "Photos"
 
-
-
+    def access_url(self, obj):
+        """Display the access URL that should be embedded in QR code."""
+        if obj.pk:
+            frontend_url = getattr(settings, "FRONTEND_BASE_URL", "http://localhost:3000")
+            url = f"{frontend_url}/?token={obj.access_token}"
+            return format_html(
+                '<a href="{}" target="_blank">{}</a>',
+                url, url
+            )
+        return "Save the event first"
+    access_url.short_description = "Access URL"
