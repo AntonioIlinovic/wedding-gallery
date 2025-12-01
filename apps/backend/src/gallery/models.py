@@ -25,7 +25,18 @@ class Photo(models.Model):
     )
     original_filename = models.CharField(max_length=255, blank=True)
     uploaded_at = models.DateTimeField(default=timezone.now, editable=False)
-    moderated = models.BooleanField(default=False)
+    
+    class ModerationStatus(models.TextChoices):
+        PENDING = "PENDING", "Pending"
+        APPROVED = "APPROVED", "Approved"
+        REJECTED = "REJECTED", "Rejected"
+
+    moderation_status = models.CharField(
+        max_length=10,
+        choices=ModerationStatus.choices,
+        default=ModerationStatus.PENDING,
+    )
+    moderated_at = models.DateTimeField(null=True, blank=True)
     file_size = models.BigIntegerField(null=True, blank=True)
     content_type = models.CharField(max_length=255, blank=True)
 

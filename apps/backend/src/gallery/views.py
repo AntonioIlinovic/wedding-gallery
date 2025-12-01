@@ -97,7 +97,7 @@ def list_photos(request, event):
     Event is validated and passed by the decorator.
     """
     # Get photos for this event
-    photos = Photo.objects.filter(event=event, moderated=True).order_by('-uploaded_at')
+    photos = Photo.objects.filter(event=event, moderation_status=Photo.ModerationStatus.APPROVED).order_by('-uploaded_at')
     
     # Paginate results
     paginator = PhotoPagination()
