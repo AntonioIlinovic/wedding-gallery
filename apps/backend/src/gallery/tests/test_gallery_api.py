@@ -77,12 +77,14 @@ class TestGalleryAPI:
         Photo.objects.create(
             event=event,
             file_key=f"{event.code}/photo1.jpg",
-            original_filename="photo1.jpg"
+            original_filename="photo1.jpg",
+            moderation_status=Photo.ModerationStatus.APPROVED
         )
         Photo.objects.create(
             event=event,
             file_key=f"{event.code}/photo2.jpg",
-            original_filename="photo2.jpg"
+            original_filename="photo2.jpg",
+            moderation_status=Photo.ModerationStatus.APPROVED
         )
         
         url = reverse('gallery:list')
