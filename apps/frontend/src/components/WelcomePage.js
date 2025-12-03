@@ -1,16 +1,17 @@
 /**
  * Welcome page component showing event information
  */
-import React, { useRef, useState, useCallback } from 'react';
+import React, { useRef, useState, useCallback, useEffect } from 'react';
 import { uploadPhoto } from '../api';
 import './WelcomePage.css';
-import './PhotoUpload.css';
 
 function WelcomePage({ event, onNavigate, accessToken }) {
   const fileInputRef = useRef(null);
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState({});
   const [uploadResults, setUploadResults] = useState([]);
+  const [totalFilesCount, setTotalFilesCount] = useState(0);
+  const [completedFilesCount, setCompletedFilesCount] = useState(0);
 
   const handleFileSelect = () => {
     fileInputRef.current?.click();
@@ -22,10 +23,13 @@ function WelcomePage({ event, onNavigate, accessToken }) {
 
     setUploading(true);
     setUploadResults([]);
+    setTotalFilesCount(files.length);
+    setUploadProgress({}); // Reset individual progress for new batch
+    setCompletedFilesCount(0);
     const results = [];
 
-    for (const file of files) {
-      const fileId = Math.random().toString(36).substring(7);
+    const filePromises = files.map(async (file) => {
+      const fileId = file.name + '-' + file.size;
       try {
         const result = await uploadPhoto(
           accessToken,
@@ -45,13 +49,11 @@ function WelcomePage({ event, onNavigate, accessToken }) {
           error: error.response?.data?.error || 'Upload failed',
         });
       } finally {
-        setUploadProgress((prev) => {
-          const newProgress = { ...prev };
-          delete newProgress[fileId];
-          return newProgress;
-        });
+        setCompletedFilesCount((prev) => prev + 1);
       }
-    }
+    });
+
+    await Promise.allSettled(filePromises);
 
     setUploadResults(results);
     setUploading(false);
@@ -60,6 +62,10 @@ function WelcomePage({ event, onNavigate, accessToken }) {
       fileInputRef.current.value = '';
     }
   }, [accessToken]);
+
+  const overallPercentage = totalFilesCount > 0 ? (completedFilesCount / totalFilesCount) * 100 : 0;
+  const successfulUploads = uploadResults.filter(r => r.success).length;
+  const failedUploads = uploadResults.length - successfulUploads;
 
   return (
     <div className="welcome-page">
@@ -115,23 +121,42 @@ function WelcomePage({ event, onNavigate, accessToken }) {
         </div>
       </div>
 
-      {uploadResults.length > 0 && (
+      {(uploading || uploadResults.length > 0) && (
         <div className="upload-results">
           <h3>Rezultati učitavanja</h3>
-          {uploadResults.map((result, index) => (
-            <div
-              key={index}
-              className={`result-item ${result.success ? 'success' : 'error'}`}
-            >
-              <span className="result-icon">
-                {result.success ? '✓' : '✗'}
-              </span>
-              <span className="result-file">{result.file}</span>
-              {!result.success && (
-                <span className="result-error">{result.error}</span>
-              )}
+          {uploading && (
+            <div className="overall-upload-status">
+              <p className="overall-progress-text">
+                Učitano: {completedFilesCount} / {totalFilesCount} fotografija
+              </p>
+              <div className="overall-progress-container">
+                <div className="overall-progress-bar" style={{ width: `${overallPercentage}%` }}>
+                </div>
+              </div>
             </div>
-          ))}
+          )}
+          {!uploading && uploadResults.length > 0 && (
+            <div>
+              <p className="upload-summary">
+                {successfulUploads} uspješno
+                {failedUploads > 0 && `, ${failedUploads} neuspješno`}
+              </p>
+              {uploadResults.map((result, index) => (
+                <div
+                  key={index}
+                  className={`result-item ${result.success ? 'success' : 'error'}`}
+                >
+                  <span className="result-icon">
+                    {result.success ? '✓' : '✗'}
+                  </span>
+                  <span className="result-file">{result.file}</span>
+                  {!result.success && (
+                    <span className="result-error">{result.error}</span>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       )}
     </div>
