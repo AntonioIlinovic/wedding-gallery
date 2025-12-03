@@ -21,7 +21,12 @@ function Gallery({ accessToken, onBack }) {
       setLoading(true);
       const data = await getPhotos(accessToken, page);
       
-      setPhotos((prev) => [...prev, ...data.results]);
+      setPhotos((prev) => {
+        const newPhotos = data.results.filter(
+          (newPhoto) => !prev.some((prevPhoto) => prevPhoto.id === newPhoto.id)
+        );
+        return [...prev, ...newPhotos];
+      });
       setHasMore(!!data.next);
       setTotalPhotos(data.count); // Assume API returns total count
       setError(null);
