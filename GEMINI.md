@@ -1,5 +1,11 @@
 # GEMINI.md
 
+
+
+IMPORTANT NOTE:
+NEVER COMMIT YOURSELF. I WILL MANUALLY COMMIT TO GIT.
+
+
 ## Project Overview
 
 This repository contains the source code for the "Wedding Gallery" web application. It is a full-stack project designed to allow wedding guests to upload and view photos from an event. The application is containerized using Docker and orchestrated with Docker Compose for both local development and production environments.
@@ -62,3 +68,7 @@ The project is designed to be run locally using Docker Compose.
 *   The backend is a Django project, and the frontend is a React project.
 *   Environment variables are used for configuration. See the `.env.example` files for details.
 *   Infrastructure is managed with Terraform.
+
+
+IMPORTANT NOTE:
+NEVER COMMIT YOURSELF. I WILL MANUALLY COMMIT TO GIT.
