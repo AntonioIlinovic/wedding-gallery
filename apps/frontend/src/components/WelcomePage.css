@@ -222,3 +222,10 @@
   white-space: nowrap;
   flex-shrink: 1;
 }
+
+.upload-warning {
+  font-size: 1rem;
+  font-weight: bold;
+  margin-top: 10px;
+  color: #c53030; /* A reddish color */
+}

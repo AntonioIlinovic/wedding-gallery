@@ -134,6 +134,9 @@ function WelcomePage({ event, onNavigate, accessToken }) {
                 <div className="overall-progress-bar" style={{ width: `${overallPercentage}%` }}>
                 </div>
               </div>
+              <p className="upload-warning">
+                Molimo ne zatvarajte i ne osvježavajte stranicu dok se fotografije učitavaju.
+              </p>
             </div>
           )}
           {!uploading && uploadResults.length > 0 && (
