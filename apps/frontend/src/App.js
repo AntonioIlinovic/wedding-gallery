@@ -11,6 +11,7 @@ function App() {
   const [event, setEvent] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [isUploading, setIsUploading] = useState(false); // New state for upload status
 
   useEffect(() => {
     const checkToken = async () => {
@@ -85,11 +86,11 @@ function App() {
   const renderView = () => {
     switch (view) {
       case 'upload':
-        return <PhotoUpload accessToken={accessToken} onBack={() => setView('welcome')} />;
+        return <PhotoUpload accessToken={accessToken} onBack={() => setView('welcome')} setIsUploading={setIsUploading} />;
       case 'gallery':
         return <Gallery accessToken={accessToken} onBack={() => setView('welcome')} />;
       default:
-        return <WelcomePage event={event} onNavigate={setView} accessToken={accessToken} />;
+        return <WelcomePage event={event} onNavigate={setView} accessToken={accessToken} isUploading={isUploading} />;
     }
   };
 

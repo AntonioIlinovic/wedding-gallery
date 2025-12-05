@@ -6,7 +6,7 @@ import { useDropzone } from 'react-dropzone';
 import { uploadPhoto } from '../api';
 import './PhotoUpload.css';
 
-function PhotoUpload({ accessToken, onBack }) {
+function PhotoUpload({ accessToken, onBack, setIsUploading }) {
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState({});
@@ -38,6 +38,7 @@ function PhotoUpload({ accessToken, onBack }) {
     if (selectedFiles.length === 0) return;
 
     setUploading(true);
+    setIsUploading(true); // Notify parent that upload started
     setUploadResults([]);
     const results = [];
 
@@ -65,6 +66,7 @@ function PhotoUpload({ accessToken, onBack }) {
 
     setUploadResults(results);
     setUploading(false);
+    setIsUploading(false); // Notify parent that upload finished
     setSelectedFiles([]);
     setUploadProgress({});
   };
