@@ -5,9 +5,9 @@ import React, { useRef, useState, useCallback, useEffect } from 'react';
 import { uploadPhoto } from '../api';
 import './WelcomePage.css';
 
-function WelcomePage({ event, onNavigate, accessToken, isUploading }) {
+function WelcomePage({ event, onNavigate, accessToken }) {
   const fileInputRef = useRef(null);
-  const [localUploading, setLocalUploading] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState({});
   const [uploadResults, setUploadResults] = useState([]);
   const [totalFilesCount, setTotalFilesCount] = useState(0);
@@ -21,7 +21,7 @@ function WelcomePage({ event, onNavigate, accessToken, isUploading }) {
     const files = Array.from(event.target.files || []);
     if (files.length === 0) return;
 
-    setLocalUploading(true);
+    setUploading(true);
     setUploadResults([]);
     setTotalFilesCount(files.length);
     setUploadProgress({}); // Reset individual progress for new batch
@@ -56,7 +56,7 @@ function WelcomePage({ event, onNavigate, accessToken, isUploading }) {
     await Promise.allSettled(filePromises);
 
     setUploadResults(results);
-    setLocalUploading(false);
+    setUploading(false);
     // Reset file input
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
@@ -66,8 +66,6 @@ function WelcomePage({ event, onNavigate, accessToken, isUploading }) {
   const overallPercentage = totalFilesCount > 0 ? (completedFilesCount / totalFilesCount) * 100 : 0;
   const successfulUploads = uploadResults.filter(r => r.success).length;
   const failedUploads = uploadResults.length - successfulUploads;
-
-  const isDisabled = isUploading || localUploading;
 
   return (
     <div className="welcome-page">
@@ -100,19 +98,19 @@ function WelcomePage({ event, onNavigate, accessToken, isUploading }) {
           <button
             className="action-button primary"
             onClick={handleFileSelect}
-            disabled={isDisabled}
+            disabled={uploading}
           >
             <span className="button-icon">
               <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="white">
                 <path d="M440-440ZM120-120q-33 0-56.5-23.5T40-200v-480q0-33 23.5-56.5T120-760h126l74-80h240v80H355l-73 80H120v480h640v-360h80v360q0 33-23.5 56.5T760-120H120Zm640-560v-80h-80v-80h80v-80h80v80h80v80h-80v80h-80ZM440-260q75 0 127.5-52.5T620-440q0-75-52.5-127.5T440-620q-75 0-127.5 52.5T260-440q0 75 52.5 127.5T440-260Zm0-80q-42 0-71-29t-29-71q0-42 29-71t71-29q42 0 71 29t29 71q0 42-29 71t-71 29Z"/>
               </svg>
             </span>
-            <span>{isDisabled ? 'Učitavanje...' : 'Podijelite vaše fotografije'}</span>
+            <span>{uploading ? 'Učitavanje...' : 'Podijelite vaše fotografije'}</span>
           </button>
           <button
             className="action-button secondary"
             onClick={() => onNavigate('gallery')}
-            disabled={isDisabled}
+            disabled={uploading}
           >
             <span className="button-icon">
               <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="white">
@@ -124,10 +122,10 @@ function WelcomePage({ event, onNavigate, accessToken, isUploading }) {
         </div>
       </div>
 
-      {(isDisabled || uploadResults.length > 0) && (
+      {(uploading || uploadResults.length > 0) && (
         <div className="upload-results">
           <h3>Rezultati učitavanja</h3>
-          {(isDisabled) && (
+          {uploading && (
             <div className="overall-upload-status">
               <p className="overall-progress-text">
                 Učitano: {completedFilesCount} / {totalFilesCount} fotografija
@@ -138,7 +136,7 @@ function WelcomePage({ event, onNavigate, accessToken, isUploading }) {
               </div>
             </div>
           )}
-          {!isDisabled && uploadResults.length > 0 && (
+          {!uploading && uploadResults.length > 0 && (
             <div>
               <p className="upload-summary">
                 {successfulUploads} uspješno

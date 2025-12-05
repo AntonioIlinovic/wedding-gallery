@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import WelcomePage from './components/WelcomePage';
-import PhotoUpload from './components/PhotoUpload';
 import Gallery from './components/Gallery';
 import { validateToken } from './api';
 import './App.css';
@@ -11,7 +10,6 @@ function App() {
   const [event, setEvent] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [isUploading, setIsUploading] = useState(false); // New state for upload status
 
   useEffect(() => {
     const checkToken = async () => {
@@ -45,9 +43,6 @@ function App() {
     if (!event) return;
 
     switch (view) {
-      case 'upload':
-        document.title = 'Učitajte vaše fotografije';
-        break;
       case 'gallery':
         document.title = 'Galerija fotografija';
         break;
@@ -85,12 +80,10 @@ function App() {
 
   const renderView = () => {
     switch (view) {
-      case 'upload':
-        return <PhotoUpload accessToken={accessToken} onBack={() => setView('welcome')} setIsUploading={setIsUploading} />;
       case 'gallery':
         return <Gallery accessToken={accessToken} onBack={() => setView('welcome')} />;
       default:
-        return <WelcomePage event={event} onNavigate={setView} accessToken={accessToken} isUploading={isUploading} />;
+        return <WelcomePage event={event} onNavigate={setView} accessToken={accessToken} />;
     }
   };
 
