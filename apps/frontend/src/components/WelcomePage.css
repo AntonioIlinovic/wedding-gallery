@@ -229,3 +229,11 @@
   margin-top: 10px;
   color: #c53030; /* A reddish color */
 }
+
+.progress-details {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  font-size: 0.9rem;
+  color: #555;
+}

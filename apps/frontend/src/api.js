@@ -42,10 +42,7 @@ export const uploadPhoto = async (accessToken, photoFile, onProgress) => {
     },
     onUploadProgress: (progressEvent) => {
       if (onProgress) {
-        const percentCompleted = Math.round(
-          (progressEvent.loaded * 100) / progressEvent.total
-        );
-        onProgress(percentCompleted);
+        onProgress(progressEvent);
       }
     },
   });

@@ -5,6 +5,23 @@ import React, { useRef, useState, useCallback, useEffect } from 'react';
 import { uploadPhoto } from '../api';
 import './WelcomePage.css';
 
+function formatBytes(bytes, decimals = 2) {
+  if (bytes === 0) return '0 Bytes';
+  const k = 1024;
+  const dm = decimals < 0 ? 0 : decimals;
+  const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+}
+
+function formatTime(seconds) {
+  if (seconds === Infinity || isNaN(seconds)) return '...';
+  if (seconds < 60) return `${Math.round(seconds)}s`;
+  const minutes = Math.floor(seconds / 60);
+  const remainingSeconds = Math.round(seconds % 60);
+  return `${minutes}m ${remainingSeconds}s`;
+}
+
 function WelcomePage({ event, onNavigate, accessToken }) {
   const fileInputRef = useRef(null);
   const [uploading, setUploading] = useState(false);
@@ -12,6 +29,13 @@ function WelcomePage({ event, onNavigate, accessToken }) {
   const [uploadResults, setUploadResults] = useState([]);
   const [totalFilesCount, setTotalFilesCount] = useState(0);
   const [completedFilesCount, setCompletedFilesCount] = useState(0);
+
+  const [totalUploadSize, setTotalUploadSize] = useState(0);
+  const [totalUploadedBytes, setTotalUploadedBytes] = useState(0);
+  const [uploadSpeed, setUploadSpeed] = useState(0);
+  const [remainingTime, setRemainingTime] = useState(0);
+
+  const uploadStartTime = useRef(null);
 
   const handleFileSelect = () => {
     fileInputRef.current?.click();
@@ -23,28 +47,50 @@ function WelcomePage({ event, onNavigate, accessToken }) {
 
     setUploading(true);
     setUploadResults([]);
+    const totalSize = files.reduce((acc, file) => acc + file.size, 0);
+    setTotalUploadSize(totalSize);
+    setTotalUploadedBytes(0);
     setTotalFilesCount(files.length);
-    setUploadProgress({}); // Reset individual progress for new batch
+    setUploadProgress({});
     setCompletedFilesCount(0);
+    setUploadSpeed(0);
+    setRemainingTime(0);
+    uploadStartTime.current = Date.now();
     const results = [];
 
-    const filePromises = files.map(async (file) => {
-      const fileId = file.name + '-' + file.size;
+    const fileUploads = files.map(file => ({ file, loaded: 0, total: file.size }));
+
+    const updateOverallProgress = () => {
+      const totalLoaded = fileUploads.reduce((acc, f) => acc + f.loaded, 0);
+      setTotalUploadedBytes(totalLoaded);
+
+      const elapsedTime = (Date.now() - uploadStartTime.current) / 1000; // in seconds
+      const speed = totalLoaded / elapsedTime;
+      setUploadSpeed(speed);
+
+      const remainingBytes = totalSize - totalLoaded;
+      const timeRemaining = remainingBytes / speed;
+      setRemainingTime(timeRemaining);
+    };
+
+    const filePromises = fileUploads.map(async (fileUpload) => {
       try {
         const result = await uploadPhoto(
           accessToken,
-          file,
-          (progress) => {
+          fileUpload.file,
+          (progressEvent) => {
+            fileUpload.loaded = progressEvent.loaded;
+            updateOverallProgress();
             setUploadProgress((prev) => ({
               ...prev,
-              [fileId]: progress,
+              [fileUpload.file.name]: (progressEvent.loaded / progressEvent.total) * 100,
             }));
           }
         );
-        results.push({ file: file.name, success: true, data: result });
+        results.push({ file: fileUpload.file.name, success: true, data: result });
       } catch (error) {
         results.push({
-          file: file.name,
+          file: fileUpload.file.name,
           success: false,
           error: error.response?.data?.error || 'Upload failed',
         });
@@ -57,13 +103,12 @@ function WelcomePage({ event, onNavigate, accessToken }) {
 
     setUploadResults(results);
     setUploading(false);
-    // Reset file input
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
   }, [accessToken]);
 
-  const overallPercentage = totalFilesCount > 0 ? (completedFilesCount / totalFilesCount) * 100 : 0;
+  const overallPercentage = totalUploadSize > 0 ? (totalUploadedBytes / totalUploadSize) * 100 : 0;
   const successfulUploads = uploadResults.filter(r => r.success).length;
   const failedUploads = uploadResults.length - successfulUploads;
 
@@ -127,9 +172,11 @@ function WelcomePage({ event, onNavigate, accessToken }) {
           <h3>Rezultati učitavanja</h3>
           {uploading && (
             <div className="overall-upload-status">
-              <p className="overall-progress-text">
-                Učitano: {completedFilesCount} / {totalFilesCount} fotografija
-              </p>
+              <div className="progress-details">
+                <span>{formatBytes(totalUploadedBytes)} / {formatBytes(totalUploadSize)}</span>
+                <span>{formatBytes(uploadSpeed)}/s</span>
+                <span>{formatTime(remainingTime)} preostalo</span>
+              </div>
               <div className="overall-progress-container">
                 <div className="overall-progress-bar" style={{ width: `${overallPercentage}%` }}>
                 </div>
