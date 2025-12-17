@@ -44,8 +44,7 @@ class Command(BaseCommand):
                 )
                 existing_event.name = name
                 existing_event.description = (
-                    "Dobrodošli na naše vjenčanje! Jako smo uzbuđeni što slavimo s vama. "
-                    "Molimo vas podijelite svoje omiljene trenutke učitavanjem fotografija ispod."
+                    """Dobro došli na naše slavlje! Drago nam je što ste s nama i voljeli bismo da ovi trenutci ostanu zabilježeni i dostupni svima koji su ovdje. Molimo vas da podijelite svoje omiljene fotografije s nama."""
                 )
                 existing_event.date = date(2026, 1, 3)
                 existing_event.is_active = True
@@ -68,8 +67,7 @@ class Command(BaseCommand):
                 code=code,
                 name=name,
                 description=(
-                    "Dobrodošli na naše vjenčanje! Jako smo uzbuđeni što slavimo s vama. "
-                    "Molimo vas podijelite svoje omiljene trenutke učitavanjem fotografija ispod."
+                    """Dobro došli na naše slavlje! Drago nam je što ste s nama i voljeli bismo da ovi trenutci ostanu zabilježeni i dostupni svima koji su ovdje. Molimo vas da podijelite svoje omiljene fotografije s nama."""
                 ),
                 date=date(2026, 1, 3),
                 is_active=True
