@@ -22,6 +22,14 @@ docker compose exec backend python manage.py migrate
 - `deploy/` - Deployment configurations
 - `infra/` - Infrastructure as Code (Terraform)
 
+## Screenshots
+
+Here are some example screenshots of the web application:
+
+![Example 1](docs/screenshots/example_1.png)
+![Example 2](docs/screenshots/example_2.png)
+![Example 3](docs/screenshots/example_3.png)
+
 ## Documentation
 
 - [Project Overview](docs/PROJECT_OVERVIEW.md) - High-level project plan and architecture
