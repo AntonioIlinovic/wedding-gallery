@@ -26,9 +26,9 @@ docker compose exec backend python manage.py migrate
 
 Here are some example screenshots of the web application:
 
-![Example 1](docs/screenshots/example_1.png)
-![Example 2](docs/screenshots/example_2.png)
-![Example 3](docs/screenshots/example_3.png)
+<img src="docs/screenshots/example_1.png" alt="Example 1" width="300"/>
+<img src="docs/screenshots/example_2.png" alt="Example 2" width="300"/>
+<img src="docs/screenshots/example_3.png" alt="Example 3" width="300"/>
 
 ## Documentation
 
