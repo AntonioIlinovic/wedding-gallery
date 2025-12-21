@@ -3,6 +3,7 @@
  */
 import React, { useRef, useState, useCallback, useEffect } from 'react';
 import { uploadPhoto } from '../api';
+import Modal from './Modal';
 import './WelcomePage.css';
 
 function formatBytes(bytes, decimals = 2) {
@@ -29,6 +30,7 @@ function WelcomePage({ event, onNavigate, accessToken }) {
   const [uploadResults, setUploadResults] = useState([]);
   const [totalFilesCount, setTotalFilesCount] = useState(0);
   const [completedFilesCount, setCompletedFilesCount] = useState(0);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const [totalUploadSize, setTotalUploadSize] = useState(0);
   const [totalUploadedBytes, setTotalUploadedBytes] = useState(0);
@@ -38,6 +40,11 @@ function WelcomePage({ event, onNavigate, accessToken }) {
   const uploadStartTime = useRef(null);
 
   const handleFileSelect = () => {
+    setIsModalOpen(true);
+  };
+
+  const handleContinueOnMobile = () => {
+    setIsModalOpen(false);
     fileInputRef.current?.click();
   };
 
@@ -114,6 +121,18 @@ function WelcomePage({ event, onNavigate, accessToken }) {
 
   return (
     <div className="welcome-page">
+      <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
+        <h3 className="modal-title">Napomena</h3>
+        <p className="modal-body">
+          Za stabilnije učitavanje preporučamo korištenje laptopa. Na mobitelu se učitavanje može prekinuti. Možete kopirati link stranice i nastaviti na laptopu.
+        </p>
+        <div className="modal-actions">
+          <button className="modal-button primary" onClick={handleContinueOnMobile}>
+            U redu
+          </button>
+        </div>
+      </Modal>
+
       <div className="welcome-hero">
         <h1 className="welcome-title">{event.name}</h1>
         {event.date && (
