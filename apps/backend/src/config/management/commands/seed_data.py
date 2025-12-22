@@ -4,6 +4,7 @@ Management command to seed initial data for the application.
 This command calls other management commands to set up sample/test data.
 It only creates data if it doesn't already exist.
 """
+import os
 from django.core.management import call_command
 from django.core.management.base import BaseCommand
 from src.events.models import Event
@@ -29,7 +30,10 @@ class Command(BaseCommand):
 
         # Create sample wedding event
         if not options['skip_events']:
-            event_code = 'andelka-anto'
+            event_code = os.environ.get('PRIMARY_EVENT_CODE', 'andelka-anto')
+            access_token = os.environ.get('PRIMARY_EVENT_ACCESS_TOKEN')
+            event_name = 'Anđelka & Anto'
+            
             event_exists = Event.objects.filter(code=event_code).exists()
             
             if event_exists and not options['force']:
@@ -40,13 +44,16 @@ class Command(BaseCommand):
                     )
                 )
             else:
-                self.stdout.write('Creating wedding event "Anđelka & Anto"...')
+                self.stdout.write(f'Creating wedding event "{event_name}"...')
                 try:
                     cmd_args = [
                         'create_sample_event',
                         '--code', event_code,
-                        '--name', 'Anđelka & Anto',
+                        '--name', event_name,
                     ]
+                    if access_token:
+                        cmd_args.extend(['--access-token', access_token])
+
                     if options['force']:
                         cmd_args.append('--overwrite')
                     

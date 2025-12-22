@@ -28,11 +28,18 @@ class Command(BaseCommand):
             action='store_true',
             help='Overwrite existing event with the same code'
         )
+        parser.add_argument(
+            '--access-token',
+            type=str,
+            default=None,
+            help='Pre-defined access token for the event. If not provided, a new one will be generated.'
+        )
 
     def handle(self, *args, **options):
         code = options['code']
         name = options['name']
         overwrite = options['overwrite']
+        access_token = options['access_token']
 
         # Check if event already exists
         existing_event = Event.objects.filter(code=code).first()
@@ -48,6 +55,8 @@ class Command(BaseCommand):
                 )
                 existing_event.date = date(2026, 1, 3)
                 existing_event.is_active = True
+                if access_token:
+                    existing_event.access_token = access_token
                 existing_event.save()
                 event = existing_event
                 self.stdout.write(
@@ -63,15 +72,19 @@ class Command(BaseCommand):
                 return
         else:
             # Create new event
-            event = Event.objects.create(
-                code=code,
-                name=name,
-                description=(
+            event_data = {
+                'code': code,
+                'name': name,
+                'description': (
                     """Dobro došli na naše slavlje! Drago nam je što ste s nama i voljeli bismo da ovi trenutci ostanu zabilježeni i dostupni svima koji su ovdje. Molimo vas da podijelite svoje omiljene fotografije s nama."""
                 ),
-                date=date(2026, 1, 3),
-                is_active=True
-            )
+                'date': date(2026, 1, 3),
+                'is_active': True
+            }
+            if access_token:
+                event_data['access_token'] = access_token
+            
+            event = Event.objects.create(**event_data)
 
             self.stdout.write(
                 self.style.SUCCESS(f'Successfully created event: {name}')
