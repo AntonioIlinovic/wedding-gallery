@@ -61,6 +61,7 @@ class TestGalleryAPI:
         photo = Photo.objects.first()
         assert photo.event == event
         assert photo.original_filename == "test_image.jpg"
+        assert photo.moderation_status == Photo.ModerationStatus.APPROVED
 
     def test_list_photos(self, client, event, monkeypatch):
         """Test listing photos for an event."""

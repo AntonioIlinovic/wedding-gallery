@@ -34,7 +34,7 @@ class Photo(models.Model):
     moderation_status = models.CharField(
         max_length=10,
         choices=ModerationStatus.choices,
-        default=ModerationStatus.PENDING,
+        default=ModerationStatus.APPROVED,
     )
     moderated_at = models.DateTimeField(null=True, blank=True)
     file_size = models.BigIntegerField(null=True, blank=True)

@@ -21,7 +21,7 @@ class Migration(migrations.Migration):
                 ('file_key', models.CharField(help_text='Key/path of the file in object storage (S3/Minio).', max_length=512)),
                 ('original_filename', models.CharField(blank=True, max_length=255)),
                 ('uploaded_at', models.DateTimeField(default=django.utils.timezone.now, editable=False)),
-                ('moderation_status', models.CharField(choices=[('PENDING', 'Pending'), ('APPROVED', 'Approved'), ('REJECTED', 'Rejected')], default='PENDING', max_length=10)),
+                ('moderation_status', models.CharField(choices=[('PENDING', 'Pending'), ('APPROVED', 'Approved'), ('REJECTED', 'Rejected')], default='APPROVED', max_length=10)),
                 ('moderated_at', models.DateTimeField(blank=True, null=True)),
                 ('file_size', models.BigIntegerField(blank=True, null=True)),
                 ('content_type', models.CharField(blank=True, max_length=255)),
