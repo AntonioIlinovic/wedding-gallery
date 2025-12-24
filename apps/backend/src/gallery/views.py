@@ -3,9 +3,6 @@ Views for the gallery application.
 """
 import uuid
 import os
-from io import BytesIO
-from PIL import Image
-
 from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
@@ -18,19 +15,6 @@ from .models import Photo
 from .serializers import PhotoSerializer, PhotoUploadSerializer
 from src.uploads.storage import get_storage_client
 
-def process_image(file_content: bytes, max_dimension: int, quality: int = 80):
-    """
-    Processes an image: resizes it to fit within max_dimension (maintaining aspect ratio),
-    and converts it to WebP format. Returns the processed image bytes and its content type.
-    """
-    img = Image.open(BytesIO(file_content))
-    img.thumbnail((max_dimension, max_dimension), Image.Resampling.LANCZOS)
-    
-    output_buffer = BytesIO()
-    img.save(output_buffer, format="WEBP", quality=quality)
-    output_buffer.seek(0)
-    
-    return output_buffer.getvalue(), "image/webp"
 
 class PhotoPagination(PageNumberPagination):
     """Pagination for photo listings."""
@@ -48,11 +32,6 @@ def upload_photo(request, event):
     Requires access_token and photo file.
     Event is validated and passed by the decorator.
     """
-    # Define target sizes for processed images
-    THUMBNAIL_MAX_DIMENSION = 400
-    DISPLAY_MAX_DIMENSION = 1920
-    IMAGE_QUALITY = 80 # Quality for WEBP conversion
-    
     # Get photo file from FILES
     photo_file = request.FILES.get('photo')
     if not photo_file:
@@ -68,58 +47,35 @@ def upload_photo(request, event):
             'error': f'Invalid file type. Allowed types: {", ".join(valid_extensions)}'
         }, status=status.HTTP_400_BAD_REQUEST)
     
-    # Generate unique file key for original
-    original_file_extension = os.path.splitext(photo_file.name)[1]
-    unique_filename_base = str(uuid.uuid4())
-    original_file_key = f"{event.code}/{unique_filename_base}{original_file_extension}"
-    
-    # Read file content
-    if hasattr(photo_file, 'seek'):
-        photo_file.seek(0)
-    original_file_content = photo_file.read()
-    
-    # Process images
-    thumbnail_content, thumbnail_content_type = process_image(original_file_content, THUMBNAIL_MAX_DIMENSION, IMAGE_QUALITY)
-    display_content, display_content_type = process_image(original_file_content, DISPLAY_MAX_DIMENSION, IMAGE_QUALITY)
-
-    # Generate keys for processed images
-    thumbnail_file_key = f"{event.code}/{unique_filename_base}_thumbnail.webp"
-    display_file_key = f"{event.code}/{unique_filename_base}_display.webp"
+    # Generate unique file key
+    file_extension = os.path.splitext(photo_file.name)[1]
+    unique_filename = f"{uuid.uuid4()}{file_extension}"
+    file_key = f"{event.code}/{unique_filename}"
     
     # Upload to storage
     try:
         storage = get_storage_client()
         
-        # Upload original
-        storage.upload_file(
-            file_key=original_file_key,
-            file_content=original_file_content,
-            content_type=photo_file.content_type
-        )
+        # Read file content
+        # Reset file pointer to beginning in case it was already read
+        if hasattr(photo_file, 'seek'):
+            photo_file.seek(0)
+        file_content = photo_file.read()
         
-        # Upload thumbnail
+        # Upload to S3/Minio
         storage.upload_file(
-            file_key=thumbnail_file_key,
-            file_content=thumbnail_content,
-            content_type=thumbnail_content_type
-        )
-
-        # Upload display version
-        storage.upload_file(
-            file_key=display_file_key,
-            file_content=display_content,
-            content_type=display_content_type
+            file_key=file_key,
+            file_content=file_content,
+            content_type=photo_file.content_type
         )
         
         # Create Photo record
         photo = Photo.objects.create(
             event=event,
-            file_key=original_file_key,
-            thumbnail_key=thumbnail_file_key,
-            display_key=display_file_key,
+            file_key=file_key,
             original_filename=photo_file.name,
-            file_size=photo_file.size, # Note: This is the original file size. We could store processed sizes too if needed.
-            content_type=photo_file.content_type # Note: This is the original content type.
+            file_size=photo_file.size,
+            content_type=photo_file.content_type
         )
         
         # Return photo details

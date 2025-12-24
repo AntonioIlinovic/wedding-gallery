@@ -23,18 +23,6 @@ class Photo(models.Model):
         max_length=512,
         help_text="Key/path of the file in object storage (S3/Minio).",
     )
-    thumbnail_key = models.CharField(
-        max_length=512,
-        null=True,
-        blank=True,
-        help_text="Key/path of the thumbnail image in object storage.",
-    )
-    display_key = models.CharField(
-        max_length=512,
-        null=True,
-        blank=True,
-        help_text="Key/path of the display-sized image in object storage.",
-    )
     original_filename = models.CharField(max_length=255, blank=True)
     uploaded_at = models.DateTimeField(default=timezone.now, editable=False)
     
@@ -52,18 +40,12 @@ class Photo(models.Model):
     file_size = models.BigIntegerField(null=True, blank=True)
     content_type = models.CharField(max_length=255, blank=True)
 
-    def get_image_url(self, size: str = "original") -> str:
+    @property
+    def image_url(self) -> str:
         """
-        Returns a presigned URL to the image file of the specified size.
-        Valid sizes are "original", "thumbnail", and "display".
+        Returns a presigned URL to the image file.
         """
-        key_to_use = self.file_key
-        if size == "thumbnail" and self.thumbnail_key:
-            key_to_use = self.thumbnail_key
-        elif size == "display" and self.display_key:
-            key_to_use = self.display_key
-        
-        return get_storage_client().generate_presigned_url(key_to_use)
+        return get_storage_client().generate_presigned_url(self.file_key)
 
     class Meta:
         ordering = ["-uploaded_at"]
