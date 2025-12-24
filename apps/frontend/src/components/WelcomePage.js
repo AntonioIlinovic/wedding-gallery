@@ -124,7 +124,7 @@ function WelcomePage({ event, onNavigate, accessToken }) {
       <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
         <h3 className="modal-title">Napomena</h3>
         <p className="modal-body">
-          Za stabilnije učitavanje preporučamo korištenje laptopa. Na mobitelu se učitavanje može prekinuti. Možete kopirati link stranice i nastaviti na laptopu.
+          Za stabilnije učitavanje preporučujemo korištenje laptopa. Na mobitelu se učitavanje može prekinuti. Možete kopirati link stranice i nastaviti na laptopu.
         </p>
         <div className="modal-actions">
           <button className="modal-button primary" onClick={handleContinueOnMobile}>
@@ -139,7 +139,7 @@ function WelcomePage({ event, onNavigate, accessToken }) {
           <p className="welcome-date">
             {(() => {
               const date = new Date(event.date);
-              return `${date.getDate()}.${date.getMonth() + 1}.${date.getFullYear()}.`;
+              return `${date.getDate()}. ${date.getMonth() + 1}. ${date.getFullYear()}.`;
             })()}
           </p>
         )}
