@@ -240,6 +240,7 @@ INSTANCE_ID=$(terraform output -raw ec2_instance_id)
 aws ec2 describe-instances --instance-ids $INSTANCE_ID
 
 # SSH into instance (once it's running, using Elastic IP)
+# If you encounter "REMOTE HOST IDENTIFICATION HAS CHANGED!", run `ssh-keygen -R $(terraform output -raw ec2_public_ip)` to clear the old host key.
 ssh -i ~/.ssh/aws-wedding-gallery-key ubuntu@$(terraform output -raw ec2_public_ip)
 ```
 
