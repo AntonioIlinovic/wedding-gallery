@@ -1,5 +1,6 @@
 import pytest
 import io
+from PIL import Image # Import Image
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APIClient
@@ -30,7 +31,7 @@ class TestGalleryAPI:
                 # Mock implementation that does nothing
                 pass
             def generate_presigned_url(self, key, expires_in=3600):
-                return "http://mock-url"
+                return "http://mock-url/" + key # Return a more realistic mock URL
         
         # Mock where it's used:
         # - views imports get_storage_client directly
@@ -38,14 +39,18 @@ class TestGalleryAPI:
         mock_storage_instance = MockStorage()
         monkeypatch.setattr("src.gallery.views.get_storage_client", lambda: mock_storage_instance)
         monkeypatch.setattr("src.uploads.storage.get_storage_client", lambda: mock_storage_instance)
+        monkeypatch.setattr("src.gallery.models.get_storage_client", lambda: mock_storage_instance) # Add this line
 
         url = reverse('gallery:upload')
         
-        # Create a dummy image file
-        image_content = b"fake-image-content"
+        # Create a real dummy image file in memory
+        image_buffer = io.BytesIO()
+        Image.new('RGB', (1000, 750), color = 'red').save(image_buffer, format='JPEG')
+        image_buffer.seek(0)
+        
         image = SimpleUploadedFile(
             "test_image.jpg", 
-            image_content, 
+            image_buffer.read(), 
             content_type="image/jpeg"
         )
         
@@ -62,6 +67,14 @@ class TestGalleryAPI:
         assert photo.event == event
         assert photo.original_filename == "test_image.jpg"
         assert photo.moderation_status == Photo.ModerationStatus.APPROVED
+        assert photo.file_key.startswith(f"{event.code}/") # Check original key
+        assert photo.thumbnail_key.startswith(f"{event.code}/") # Check thumbnail key
+        assert photo.display_key.startswith(f"{event.code}/") # Check display key
+        assert photo.thumbnail_key.endswith(".webp") # Check format
+        assert photo.display_key.endswith(".webp") # Check format
+        assert photo.get_image_url(size="original") == f"http://mock-url/{photo.file_key}"
+        assert photo.get_image_url(size="thumbnail") == f"http://mock-url/{photo.thumbnail_key}"
+        assert photo.get_image_url(size="display") == f"http://mock-url/{photo.display_key}"
 
     def test_list_photos(self, client, event, monkeypatch):
         """Test listing photos for an event."""
