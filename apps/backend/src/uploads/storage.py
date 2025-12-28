@@ -93,24 +93,34 @@ class StorageClient:
         Generate a time-limited URL for reading an object.
         For MinIO, we create URLs with the public endpoint (localhost:9000)
         so browsers can access them. Signature is calculated for this endpoint.
+        For AWS S3, if a custom domain is provided, we use it as the endpoint
+        for the presigned URL. This is useful when behind a CDN.
         """
-        # For MinIO, use a client with public endpoint for presigned URLs
-        if getattr(settings, "USE_MINIO", False):
-            public_client = boto3.client(
-                "s3",
-                endpoint_url=getattr(settings, "MINIO_PUBLIC_ENDPOINT", "http://localhost:9000"),
-                aws_access_key_id=os.environ.get("AWS_ACCESS_KEY_ID", os.environ.get("MINIO_ROOT_USER")),
-                aws_secret_access_key=os.environ.get("AWS_SECRET_ACCESS_KEY", os.environ.get("MINIO_ROOT_PASSWORD")),
-                region_name=getattr(settings, "AWS_S3_REGION_NAME", "eu-central-1"),
-            )
-            return public_client.generate_presigned_url(
-                "get_object",
-                Params={"Bucket": self.bucket_name, "Key": key},
-                ExpiresIn=expires_in,
-            )
+        use_minio = getattr(settings, "USE_MINIO", False)
         
-        # For AWS S3, use the regular client
-        return self.client.generate_presigned_url(
+        client_kwargs = {
+            "aws_access_key_id": os.environ.get("AWS_ACCESS_KEY_ID", os.environ.get("MINIO_ROOT_USER")),
+            "aws_secret_access_key": os.environ.get("AWS_SECRET_ACCESS_KEY", os.environ.get("MINIO_ROOT_PASSWORD")),
+            "region_name": getattr(settings, "AWS_S3_REGION_NAME", "eu-central-1"),
+        }
+
+        # By default, use the client that was initialized with the class
+        presigned_url_client = self.client
+        
+        # If a public endpoint is specified (for MinIO or a custom S3 domain),
+        # create a new client configured for that public endpoint.
+        public_endpoint = None
+        if use_minio:
+            public_endpoint = getattr(settings, "MINIO_PUBLIC_ENDPOINT", "http://localhost:9000")
+        else:
+            # For production, we might have a custom domain (e.g., CloudFront)
+            public_endpoint = getattr(settings, "AWS_S3_CUSTOM_DOMAIN", None)
+
+        if public_endpoint:
+            client_kwargs["endpoint_url"] = public_endpoint
+            presigned_url_client = boto3.client("s3", **client_kwargs)
+
+        return presigned_url_client.generate_presigned_url(
             "get_object",
             Params={"Bucket": self.bucket_name, "Key": key},
             ExpiresIn=expires_in,

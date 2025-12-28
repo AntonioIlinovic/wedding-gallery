@@ -165,6 +165,7 @@ if not DEBUG:
 # For local development we use Minio (S3-compatible).
 AWS_STORAGE_BUCKET_NAME = os.environ.get('AWS_STORAGE_BUCKET_NAME', os.environ.get('MINIO_BUCKET_NAME', 'wedding-gallery'))
 AWS_S3_REGION_NAME = os.environ.get('AWS_S3_REGION_NAME', 'eu-central-1')
+AWS_S3_CUSTOM_DOMAIN = os.environ.get('AWS_S3_CUSTOM_DOMAIN', None)
 USE_MINIO = os.environ.get('USE_MINIO', 'True') == 'True'
 MINIO_ENDPOINT = os.environ.get('MINIO_ENDPOINT', 'http://minio:9000')
 
