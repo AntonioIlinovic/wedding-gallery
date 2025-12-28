@@ -298,3 +298,16 @@ aws ec2 release-address --allocation-id ALLOCATION_ID
 - **Deploy application** to EC2 instance. We will use Github Actions workflow to deploy it to running server
 
 - **Configure Cloudflare DNS** to point `weddinggallery.site` to the EC2 Elastic IP (`ec2_public_ip` output)
+
+
+### Sync S3 Bucket to Local Folder
+
+To download all images (and other files) from your S3 bucket to your laptop, use the following command:
+
+```bash
+aws s3 sync s3://wedding-gallery-prod-photos-528160042133 /Users/antonioilinovic/Downloads/aws_s3
+```
+
+This will copy all contents of the S3 bucket to your specified local directory.
+
+
