@@ -6,22 +6,20 @@ from .models import Photo
 
 
 class PhotoSerializer(serializers.ModelSerializer):
-    """Serializer for Photo model with presigned URL."""
-    url = serializers.SerializerMethodField()
-    
+    """Serializer for the Photo model, including image and thumbnail URLs."""
+
     class Meta:
         model = Photo
-        fields = ['id', 'original_filename', 'uploaded_at', 'file_size', 
-                  'content_type', 'url']
-        read_only_fields = ['id', 'uploaded_at']
-    
-    def get_url(self, obj):
-        """Generate presigned URL for photo viewing."""
-        from src.uploads.storage import get_storage_client
-        storage = get_storage_client()
-        # Presigned URL valid for 1 hour
-        return storage.generate_presigned_url(obj.file_key, expires_in=3600)
-
+        fields = [
+            'id',
+            'original_filename',
+            'uploaded_at',
+            'file_size',
+            'content_type',
+            'image_url',
+            'thumbnail_url',
+        ]
+        read_only_fields = fields
 
 
 class PhotoUploadSerializer(serializers.Serializer):

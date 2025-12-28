@@ -52,6 +52,11 @@ services:
       - "9090:9090"
     volumes:
       - minio_data:/data
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
     networks:
       - wedding-gallery-network
 
@@ -59,7 +64,8 @@ services:
     image: minio/mc
     container_name: wedding-gallery-mc
     depends_on:
-      - minio
+      minio:
+        condition: service_healthy
     env_file:
       - .env
     entrypoint: >

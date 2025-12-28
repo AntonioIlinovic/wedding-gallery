@@ -171,3 +171,7 @@ MINIO_ENDPOINT = os.environ.get('MINIO_ENDPOINT', 'http://minio:9000')
 # Base URL of the frontend, used when generating QR codes.
 FRONTEND_BASE_URL = os.environ.get('FRONTEND_BASE_URL', 'http://localhost:3000')
 
+# Thumbnail settings
+THUMBNAIL_SIZE = (400, 400)
+THUMBNAIL_QUALITY = 75
+

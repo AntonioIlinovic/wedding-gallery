@@ -153,7 +153,7 @@ function Gallery({ accessToken, onBack }) {
                 className="photo-item"
                 onClick={() => openLightbox(photo, index)}
               >
-                <img src={photo.url} alt={photo.original_filename} />
+                <img src={photo.thumbnail_url} alt={photo.original_filename} />
               </div>
             ))}
           </div>
@@ -198,7 +198,7 @@ function Gallery({ accessToken, onBack }) {
           )}
           
           <div className="lightbox-content" onClick={(e) => e.stopPropagation()}>
-            <img src={selectedPhoto.url} alt={selectedPhoto.original_filename} />
+            <img src={selectedPhoto.image_url} alt={selectedPhoto.original_filename} />
             
             <div className="lightbox-info">
               <p className="lightbox-counter">

@@ -52,6 +52,12 @@ class StorageClient:
     bucket_name: str
     client: BaseClient
 
+    def download_fileobj(self, key: str, fileobj: BinaryIO) -> None:
+        """
+        Download a file from storage into a file-like object.
+        """
+        self.client.download_fileobj(self.bucket_name, key, fileobj)
+
     def upload_fileobj(
         self,
         fileobj: BinaryIO,
