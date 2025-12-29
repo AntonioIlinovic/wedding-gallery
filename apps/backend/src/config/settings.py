@@ -176,3 +176,6 @@ FRONTEND_BASE_URL = os.environ.get('FRONTEND_BASE_URL', 'http://localhost:3000')
 THUMBNAIL_SIZE = (400, 400)
 THUMBNAIL_QUALITY = 75
 
+# Maximum number of photos a user can upload at once
+MAX_PHOTOS_UPLOAD_LIMIT = 10
+

@@ -106,3 +106,14 @@ def list_photos(request, event):
     serializer = PhotoSerializer(paginated_photos, many=True)
     return paginator.get_paginated_response(serializer.data)
 
+
+@api_view(['GET'])
+def get_upload_limit(request):
+    """
+    Return the maximum number of photos that can be uploaded at once.
+    """
+    from django.conf import settings
+    return Response({
+        'max_upload_limit': settings.MAX_PHOTOS_UPLOAD_LIMIT
+    }, status=status.HTTP_200_OK)
+

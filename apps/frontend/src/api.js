@@ -62,5 +62,13 @@ export const getPhotos = async (accessToken, page = 1) => {
   return response.data;
 };
 
+/**
+ * Get the maximum number of photos that can be uploaded at once.
+ */
+export const getUploadLimit = async () => {
+  const response = await api.get('/gallery/upload-limit/');
+  return response.data;
+};
+
 export default api;
 

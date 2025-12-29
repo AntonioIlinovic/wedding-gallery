@@ -2,7 +2,7 @@
  * Welcome page component showing event information
  */
 import React, { useRef, useState, useCallback, useEffect } from 'react';
-import { uploadPhoto } from '../api';
+import { uploadPhoto, getUploadLimit } from '../api';
 import './WelcomePage.css';
 
 function formatBytes(bytes, decimals = 2) {
@@ -35,7 +35,21 @@ function WelcomePage({ event, onNavigate, accessToken }) {
   const [uploadSpeed, setUploadSpeed] = useState(0);
   const [remainingTime, setRemainingTime] = useState(0);
 
+  const [maxUploadLimit, setMaxUploadLimit] = useState(null);
+
   const uploadStartTime = useRef(null);
+
+  useEffect(() => {
+    const fetchUploadLimit = async () => {
+      try {
+        const data = await getUploadLimit();
+        setMaxUploadLimit(data.max_upload_limit);
+      } catch (error) {
+        console.error('Failed to fetch upload limit:', error);
+      }
+    };
+    fetchUploadLimit();
+  }, []);
 
   const handleFileSelect = () => {
     fileInputRef.current?.click();
@@ -44,6 +58,14 @@ function WelcomePage({ event, onNavigate, accessToken }) {
   const handleFileChange = useCallback(async (event) => {
     const files = Array.from(event.target.files || []);
     if (files.length === 0) return;
+
+    if (maxUploadLimit && files.length > maxUploadLimit) {
+      alert(`Možete odabrati najviše ${maxUploadLimit} fotografija odjednom.`);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+      return;
+    }
 
     setUploading(true);
     setUploadResults([]);
@@ -106,7 +128,7 @@ function WelcomePage({ event, onNavigate, accessToken }) {
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
-  }, [accessToken]);
+  }, [accessToken, maxUploadLimit]);
 
   const overallPercentage = totalUploadSize > 0 ? (totalUploadedBytes / totalUploadSize) * 100 : 0;
   const successfulUploads = uploadResults.filter(r => r.success).length;
