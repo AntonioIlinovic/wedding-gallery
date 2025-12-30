@@ -114,8 +114,14 @@ function Gallery({ accessToken, onBack }) {
     return () => window.removeEventListener('keydown', handleKeyPress);
   }, [selectedPhoto, selectedPhotoIndex, photos, hasMore, loading]);
 
-  // Calculate grid layout
-  const columnCount = useMemo(() => Math.max(1, Math.floor(width / 180)), [width]);
+  // Calculate grid layout with responsive column width
+  const minColumnWidth = useMemo(() => {
+    if (width >= 1920) return 400; // Large/high-res screens
+    if (width >= 1440) return 250; // Medium-large screens
+    if (width >= 1024) return 220; // Medium screens
+    return 180; // Small screens
+  }, [width]);
+  const columnCount = useMemo(() => Math.max(1, Math.floor(width / minColumnWidth)), [width, minColumnWidth]);
   const columnWidth = useMemo(() => width / columnCount, [width, columnCount]);
   const rowHeight = columnWidth; // Square thumbnails
 
