@@ -181,5 +181,5 @@ FULLSCREEN_SIZE = (1920, 1080)
 FULLSCREEN_QUALITY = 85
 
 # Maximum number of photos a user can upload at once
-MAX_PHOTOS_UPLOAD_LIMIT = 10
+MAX_PHOTOS_UPLOAD_LIMIT = 100
 
