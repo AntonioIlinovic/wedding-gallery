@@ -36,6 +36,11 @@ class Photo(models.Model):
         blank=True,
         help_text="Key/path of the thumbnail in object storage (S3/Minio).",
     )
+    fullscreen_key = models.CharField(
+        max_length=512,
+        blank=True,
+        help_text="Key/path of the fullscreen image in object storage (S3/Minio).",
+    )
     original_filename = models.CharField(max_length=255, blank=True)
     uploaded_at = models.DateTimeField(default=timezone.now, editable=False)
 
@@ -54,31 +59,89 @@ class Photo(models.Model):
     content_type = models.CharField(max_length=255, blank=True)
 
     @property
-    def image_url(self) -> str:
+    def original_image_url(self) -> str:
         """
-        Returns a presigned URL to the image file.
+        Returns a presigned URL to the original image file.
         """
         return get_storage_client().generate_presigned_url(self.file_key)
+
+    @property
+    def fullscreen_url(self) -> str:
+        """
+        Returns a presigned URL to the fullscreen image file.
+        Returns the original image URL if no fullscreen image exists.
+        """
+        if self.fullscreen_key:
+            return get_storage_client().generate_presigned_url(self.fullscreen_key)
+        return self.original_image_url
 
     @property
     def thumbnail_url(self) -> str:
         """
         Returns a presigned URL to the thumbnail file.
-        Returns the original image URL if no thumbnail exists.
+        Returns the fullscreen image URL if no thumbnail exists.
         """
         if self.thumbnail_key:
             return get_storage_client().generate_presigned_url(self.thumbnail_key)
-        return self.image_url
+        return self.fullscreen_url
 
     def save(self, *args, **kwargs):
         """
-        Overrides the save method to generate a thumbnail on initial creation.
+        Overrides the save method to generate a thumbnail and a fullscreen image
+        on initial creation.
         """
         is_new = self._state.adding
         super().save(*args, **kwargs)
 
-        if is_new and self.file_key and not self.thumbnail_key:
-            self._create_and_upload_thumbnail()
+        if is_new and self.file_key:
+            if not self.thumbnail_key:
+                self._create_and_upload_thumbnail()
+            if not self.fullscreen_key:
+                self._create_and_upload_fullscreen()
+
+    def _create_and_upload_fullscreen(self):
+        """
+        Creates a fullscreen-optimized image and uploads it to storage.
+        """
+        storage = get_storage_client()
+        try:
+            original_image_data = io.BytesIO()
+            storage.download_fileobj(self.file_key, original_image_data)
+            original_image_data.seek(0)
+            
+            img = Image.open(original_image_data)
+
+            if img.mode not in ("RGB", "L"):
+                img = img.convert("RGB")
+            
+            img.thumbnail(settings.FULLSCREEN_SIZE)
+
+            fullscreen_io = io.BytesIO()
+            img.save(
+                fullscreen_io,
+                format="JPEG",
+                quality=settings.FULLSCREEN_QUALITY,
+                optimize=True,
+            )
+            fullscreen_io.seek(0)
+            
+            event_code = self.file_key.split('/')[0]
+            filename = os.path.basename(self.file_key)
+            name, ext = os.path.splitext(filename)
+            fullscreen_filename = f"{name}_fullscreen.jpg"
+            fullscreen_key = os.path.join(event_code, "fullscreen", fullscreen_filename)
+
+            storage.upload_fileobj(
+                fileobj=fullscreen_io,
+                key=fullscreen_key,
+                content_type="image/jpeg"
+            )
+
+            Photo.objects.filter(pk=self.pk).update(fullscreen_key=fullscreen_key)
+            self.fullscreen_key = fullscreen_key
+
+        except Exception as e:
+            print(f"Error creating fullscreen image for {self.file_key}: {e}")
 
     def _create_and_upload_thumbnail(self):
         """
@@ -109,10 +172,11 @@ class Photo(models.Model):
             thumb_io.seek(0)
             
             # Construct a new key for the thumbnail
-            path, filename = os.path.split(self.file_key)
+            event_code = self.file_key.split('/')[0]
+            filename = os.path.basename(self.file_key)
             name, ext = os.path.splitext(filename)
             thumb_filename = f"{name}_thumbnail.jpg"
-            thumb_key = os.path.join(path, "thumbnails", thumb_filename)
+            thumb_key = os.path.join(event_code, "thumbnails", thumb_filename)
 
             # Upload the thumbnail using the correct method
             storage.upload_fileobj(

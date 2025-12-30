@@ -198,7 +198,7 @@ function Gallery({ accessToken, onBack }) {
           )}
           
           <div className="lightbox-content" onClick={(e) => e.stopPropagation()}>
-            <img src={selectedPhoto.image_url} alt={selectedPhoto.original_filename} />
+            <img src={selectedPhoto.fullscreen_url} alt={selectedPhoto.original_filename} />
             
             <div className="lightbox-info">
               <p className="lightbox-counter">

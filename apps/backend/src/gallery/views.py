@@ -50,7 +50,7 @@ def upload_photo(request, event):
     # Generate unique file key
     file_extension = os.path.splitext(photo_file.name)[1]
     unique_filename = f"{uuid.uuid4()}{file_extension}"
-    file_key = f"{event.code}/{unique_filename}"
+    file_key = f"{event.code}/originals/{unique_filename}"
     
     # Upload to storage
     try:

@@ -16,7 +16,8 @@ class PhotoSerializer(serializers.ModelSerializer):
             'uploaded_at',
             'file_size',
             'content_type',
-            'image_url',
+            'original_image_url',
+            'fullscreen_url',
             'thumbnail_url',
         ]
         read_only_fields = fields
