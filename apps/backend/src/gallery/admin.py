@@ -37,7 +37,7 @@ class PhotoAdmin(admin.ModelAdmin):
         if obj.file_key:
             return format_html(
                 '<img src="{}" style="width: 300px; height: 300px; object-fit: contain; border-radius: 4px;" />',
-                obj.image_url,
+                obj.thumbnail_url,
             )
         return "No Image"
     thumbnail_preview.short_description = "Preview"
